@@ -1,0 +1,15 @@
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp2.0\NetflixAPI.csprojResolveAssemblyReference.cache
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp2.0\NetflixAPI.csproj.CoreCompileInputs.cache
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp2.0\NetflixAPI.AssemblyInfoInputs.cache
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp2.0\NetflixAPI.AssemblyInfo.cs
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp2.0\NetflixAPI.deps.json
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp2.0\NetflixAPI.runtimeconfig.json
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp2.0\NetflixAPI.runtimeconfig.dev.json
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp2.0\NetflixAPI.dll
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp2.0\NetflixAPI.pdb
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp2.0\Microsoft.Exchange.WebServices.NETStandard.dll
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp2.0\NetflixAPI.dll
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp2.0\NetflixAPI.pdb
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp2.0\x86\e_sqlite3.dll
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp2.0\x64\e_sqlite3.dll
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp2.0\UserSecretsAssemblyInfo.cs

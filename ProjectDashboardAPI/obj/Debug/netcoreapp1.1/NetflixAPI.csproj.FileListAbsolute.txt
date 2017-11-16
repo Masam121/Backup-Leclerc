@@ -1,0 +1,9 @@
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp1.1\NetflixAPI.csprojResolveAssemblyReference.cache
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp1.1\NetflixAPI.AssemblyInfo.cs
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp1.1\NetflixAPI.deps.json
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp1.1\NetflixAPI.runtimeconfig.json
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp1.1\NetflixAPI.runtimeconfig.dev.json
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp1.1\NetflixAPI.dll
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\bin\Debug\netcoreapp1.1\NetflixAPI.pdb
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp1.1\NetflixAPI.dll
+C:\Users\marcelsm\source\repos\NetflixAPI\NetflixAPI\obj\Debug\netcoreapp1.1\NetflixAPI.pdb

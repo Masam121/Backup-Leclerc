@@ -1,0 +1,11 @@
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\bin\Release\netcoreapp1.1\ProjectDashboardAPI.deps.json
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\bin\Release\netcoreapp1.1\ProjectDashboardAPI.runtimeconfig.json
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\bin\Release\netcoreapp1.1\ProjectDashboardAPI.runtimeconfig.dev.json
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\bin\Release\netcoreapp1.1\ProjectDashboardAPI.dll
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\bin\Release\netcoreapp1.1\ProjectDashboardAPI.pdb
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\obj\Release\netcoreapp1.1\ProjectDashboardAPI.csproj.CoreCompileInputs.cache
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\obj\Release\netcoreapp1.1\ProjectDashboardAPI.AssemblyInfoInputs.cache
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\obj\Release\netcoreapp1.1\ProjectDashboardAPI.AssemblyInfo.cs
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\obj\Release\netcoreapp1.1\ProjectDashboardAPI.dll
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\obj\Release\netcoreapp1.1\ProjectDashboardAPI.pdb
+C:\Users\marcelsm\Desktop\ProjectDashborad\project-dashboard\ProjectDashboard-API\ProjectDashboardAPI\obj\Release\netcoreapp1.1\ProjectDashboardAPI.csprojResolveAssemblyReference.cache
