@@ -7,6 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using NetflixAPI.Models;
 using Microsoft.Extensions.Logging;
 using ProjectDashboardAPI;
+using ProjectDashboardAPI.Services;
+using ProjectDashboardAPI.Repositories;
+using ProjectDashboardAPI.Services.Mapping;
+using ProjectDashboardAPI.Mappers;
+using ProjectDashboardAPI.Controllers;
+using ProjectDashboardAPI.Models.Dto;
 
 namespace NetflixAPI
 {
@@ -33,7 +39,26 @@ namespace NetflixAPI
             });
             services.AddMvc().AddJsonOptions(jsonOptions => { jsonOptions.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore; });
 
-            // services.AddSingleton<ITodoRepository, TodoRepository>();
+            services.AddSingleton<IProjectService, ProjectService>();
+            services.AddSingleton<ISapService, SapService>();
+            services.AddSingleton<INotificationService, NotificationService>();
+
+            services.AddSingleton<IMapper<Notification, NotificationDto>, NotificationEntityToNotificationDtoMapper>();
+            services.AddSingleton<IMapper<Tuple<Employe, Role>, PartnerDto>, NotificationPartnerToPartnerDtoMapper>();
+            services.AddSingleton<IMapper<Project, ProjectNetflixCard>, ProjectEntityToProjectNetflixCardMapper>();
+            services.AddSingleton<IMapper<Project, ProjectNetflix>, ProjectEntityToProjectNetflixMapper>();
+            services.AddSingleton<IMapper<ProjectSAP, Project>, ProjectSAPToProjectEntityMapper>();
+
+            services.AddSingleton<IProjectMappingService, ProjectMappingService>();
+            services.AddSingleton<INotificationMappingService, NotificationMappingService>();
+            services.AddSingleton<INotificationPartnerMappingService, NotificationPartnerMappingService>();
+            services.AddSingleton<IProjectCardMappingService, ProjectCardMappingService>();
+
+            services.AddSingleton<IProjectRepository, ProjectRepository>();
+            services.AddSingleton<INotificationRepository, NotificationRepository>();
+            services.AddSingleton<INotificationPartnerRepository, NotificationPartnerRepository>();
+            services.AddSingleton<IEmployeeRepository, EmployeeRepository>();
+            services.AddSingleton<IBudgetRepository, BudgetRepository>();
 
             services.AddSwaggerGen(c =>
             {
@@ -56,6 +81,7 @@ namespace NetflixAPI
             app.UseCors(builder => {
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
             });
+            app.ApplicationServices.GetService<IDisposable>();
             app.UseMvc();
 
             app.UseSwagger();

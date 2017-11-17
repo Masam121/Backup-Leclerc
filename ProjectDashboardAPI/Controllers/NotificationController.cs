@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using ProjectDashboardAPI.Models.Dto;
 using Microsoft.EntityFrameworkCore;
+using ProjectDashboardAPI.Services;
 
 namespace ProjectDashboardAPI.Controllers
 {
@@ -16,10 +17,13 @@ namespace ProjectDashboardAPI.Controllers
     public class NotificationController : Controller
     {
         private readonly netflix_prContext _context;
+        private readonly INotificationService _notificationService;
         DateTime nullDate = new DateTime(0001, 01, 01, 0, 0, 0);
-        public NotificationController(netflix_prContext context)
+
+        public NotificationController(netflix_prContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         }
 
         protected String RemoveUnusedDigitFromSAPProjectId(String projectSAPidWithDigit)
@@ -609,26 +613,19 @@ namespace ProjectDashboardAPI.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<NotificationDto> GetAllNotifications()
+        public async Task<IActionResult> GetAllNotifications()
         {
-            List<NotificationDto> notificationList = new List<NotificationDto>();
-            List<Notification> notifications = (from p in _context.Notification
-                                                select p).ToList();
+            List<NotificationDto> notificationList = await _notificationService.GetAllNotifications();
 
-            foreach (Notification notification in notifications)
-            {
-                NotificationDto notificationDto = CreateNotificationDto(notification);
-                notificationList.Add(notificationDto);
-            }
-            return notificationList;
+            return Ok(notificationList);
         }
 
         [HttpGet("{departmentId}", Name = "getByDepartementalIdNotifications")]
-        public IEnumerable<NotificationDto> GetDepartementalNotifications(string departmentId)
+        public async Task<IActionResult> GetDepartementalNotifications(string departmentId)
         {
             if(departmentId.Substring(0, 3) == "All")
             {
-                return GetAllNotifications();
+                return Ok(GetAllNotifications());
             }
             else
             {
@@ -643,7 +640,7 @@ namespace ProjectDashboardAPI.Controllers
                     NotificationDto notificationDto = CreateNotificationDto(notification);
                     notificationList.Add(notificationDto);
                 }
-                return notificationList;
+                return Ok(notificationList);
             }            
         }
 
