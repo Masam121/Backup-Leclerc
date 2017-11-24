@@ -130,13 +130,9 @@ namespace ProjectDashboardAPI.Controllers
         }
 
         protected Task CreateTask(NotificationTask task, Notification notification)
-        {
-            int id = (from p in _context.Notification
-                      where p.NotificationSapId == notification.NotificationSapId
-                      select p.Id).FirstOrDefault();
-
+        {            
             Task taskEntity = new Task();
-            taskEntity.NotificationId = id;
+            taskEntity.Notification = notification;
             taskEntity.ConcatenatedId = CreateTaskConcatenatedId(notification.NotificationSapId, task.TaskKey);
             taskEntity.Description = task.Description;
             taskEntity.Type = task.Type;
@@ -407,6 +403,7 @@ namespace ProjectDashboardAPI.Controllers
             foreach (NotificationTask task in tasks)
             {
                 Task taskEntity = CreateTask(task, notification);
+                
                 if (verifyIfTaskAlreadyExists(taskEntity))
                 {
                     if (verifyIfTaskAsBeenModified(taskEntity))
@@ -430,7 +427,6 @@ namespace ProjectDashboardAPI.Controllers
 
                 ExistingTasksId.Remove(task.SAPid);
             }
-
             if (ExistingTasksId.Any())
             {
                 foreach (String ConcatenatedId in ExistingTasksId)
@@ -445,7 +441,7 @@ namespace ProjectDashboardAPI.Controllers
 
                     if (TaskToBeDeleted != null)
                     {
-                        removeTask(TaskToBeDeleted, TaskOwnerToBeDeleted);                 
+                        removeTask(TaskToBeDeleted, TaskOwnerToBeDeleted);
                     }
                 }
             }
@@ -717,10 +713,6 @@ namespace ProjectDashboardAPI.Controllers
                 {
                     Console.WriteLine(ex.Message);
                     continue;
-                }
-                if (notificationEntitity.Description == "PPM-Project Portfolio Management netflix")
-                {
-                    System.Console.WriteLine("Ici");
                 }
                 if (!VerifyIfNotificationAlreadyExistsInDataBase(notificationEntitity))
                 {
