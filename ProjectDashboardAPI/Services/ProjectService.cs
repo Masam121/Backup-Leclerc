@@ -44,7 +44,7 @@ namespace ProjectDashboardAPI.Services
             List<NotificationPartner> partners = new List<NotificationPartner>();
             foreach (Notification notification in notifications)
             {
-                var notificationPartners = _notificaiotnPartnerRepository.ReadAllPartnersFromNotification(notification);
+                var notificationPartners = _notificaiotnPartnerRepository.ReadManyPartnersByNotification(notification);
                 foreach (NotificationPartner partner in notificationPartners.Result)
                 {
                     partners.Add(partner);
@@ -164,7 +164,7 @@ namespace ProjectDashboardAPI.Services
             {
                 if (!partnerIdAlreadyAdded.Contains(partner.NotificationId))
                 {
-                    Notification notification = await _notificationRepository.ReadAsyncNotificationById(partner.NotificationId);
+                    Notification notification = await _notificationRepository.ReadOneAsyncNotificationById(partner.NotificationId);
                     
                     notifications.Add(notification);
                     partnerIdAlreadyAdded.Add(partner.NotificationId);
@@ -275,7 +275,7 @@ namespace ProjectDashboardAPI.Services
                         }
                         else
                         {
-                            _projectRepository.SaveProject(project);
+                            _projectRepository.AddProject(project);
                         }
                         ExistingProjects.Remove(RemoveUnusedDigitFromSAPProjectId(projectSAP.id_SAP));
                     }

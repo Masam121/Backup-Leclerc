@@ -10,5 +10,6 @@ namespace ProjectDashboardAPI.Services
     public interface ISapService
     {
         Task<IEnumerable<ProjectSAP>> GetSapProject();
+        Task<IEnumerable<NotificationSAP>> GetSapNotification();
     }
 }

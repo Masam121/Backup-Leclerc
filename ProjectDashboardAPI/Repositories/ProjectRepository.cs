@@ -83,12 +83,12 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(facilityProjects);
         }
 
-        public Task<IEnumerable<string>> ReadManyAsyncProjectSAPId()
+        public Task<List<string>> ReadManyAsyncProjectSAPId()
         {
-            IEnumerable<string> facilityProjects = (from p in _context.Project
-                                                     select p.ProjectSapId).ToList();
+            List<string> ProjectsSAPIds = (from p in _context.Project
+                                           select p.ProjectSapId).ToList();
 
-            return System.Threading.Tasks.Task.FromResult(facilityProjects);
+            return System.Threading.Tasks.Task.FromResult(ProjectsSAPIds);
         }
 
         public Task<bool> VerifiyIfProjectExists(Project project)
@@ -151,7 +151,7 @@ namespace ProjectDashboardAPI.Repositories
             _context.Project.Update(ProjectExists);
         }
 
-        public void SaveProject(Project project)
+        public void AddProject(Project project)
         {
             _context.Project.Add(project);
         }

@@ -19,6 +19,38 @@ namespace ProjectDashboardAPI.Repositories
             _notificationPartnerMappingService = notificationPartnerMappingService;
         }
 
+        public void AddPartner(NotificationPartner partner)
+        {
+            _context.NotificationPartner.Add(partner);
+        }
+
+        public string TrimZerosFromSAPId(string id)
+        {
+            string trimedId = id.TrimStart('0');
+            return trimedId;
+        }
+
+        public string CreateTaskConcatenatedId(string notificationSAPId, string taskKey)
+        {
+            string concatenatedId = notificationSAPId + taskKey;
+            return concatenatedId;
+        }
+
+        public string CreatePartnerConcatenatedId(string notificationSAPId, int employeeId, int roleId)
+        {
+            string s_employeeId = employeeId.ToString();
+            string s_roleId = roleId.ToString();
+
+            string concatenatedId = notificationSAPId + s_employeeId + s_roleId;
+            return concatenatedId;
+        }
+
+        public Task<NotificationPartner> CreateNotificationPartnerEntity(Partner partner, Notification notification)
+        {
+            Tuple<Partner, Notification> partnerInfo = Tuple.Create(partner, notification);
+            return System.Threading.Tasks.Task.FromResult(_notificationPartnerMappingService.Map(partnerInfo));
+        }
+
         public Task<IEnumerable<PartnerDto>> CreateNotificationPartnersDto(Notification notification)
         {
             var notificationPartners = (from p in _context.NotificationPartner
@@ -89,9 +121,9 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(contributor_netflix);
         }
 
-        public Task<IEnumerable<NotificationPartner>> ReadAllPartnersFromNotification(Notification notification)
+        public Task<List<NotificationPartner>> ReadManyPartnersByNotification(Notification notification)
         {
-            IEnumerable<NotificationPartner> notificaitionPartners = (from p in _context.NotificationPartner
+            List<NotificationPartner> notificaitionPartners = (from p in _context.NotificationPartner
                                                                where p.NotificationId == notification.Id
                                                                select p).ToList();
 
@@ -105,6 +137,74 @@ namespace ProjectDashboardAPI.Repositories
                                                   select p).ToList();
 
             return System.Threading.Tasks.Task.FromResult(partners);
+        }
+
+        public void UpdatePartner(NotificationSAP notification)
+        {
+            Notification n = (from p in _context.Notification
+                              where p.NotificationSapId == TrimZerosFromSAPId(notification.NotificationSapId)
+                              select p).FirstOrDefault();
+
+            Dictionary<string, NotificationPartner> partners = (from p in _context.NotificationPartner
+                                                                where p.NotificationId == n.Id
+                                                                select p).ToDictionary(p => p.ConcatenatedId, p => p);
+
+            var listOfPartnerTobeDeleted = (from p in _context.NotificationPartner
+                                            where p.NotificationId == n.Id
+                                            select p).ToDictionary(p => p.ConcatenatedId, p => p);
+
+            List<Partner> listOfPartnerTobeAdded = new List<Partner>();
+
+            foreach (var partner in notification.Partners)
+            {
+                int employeeId = (from p in _context.Employe
+                                  where p.IdSAP == TrimZerosFromSAPId(partner.EmployeId)
+                                  select p.Id).FirstOrDefault();
+
+                int roleId = (from p in _context.Role
+                              where p.RoleSigle == partner.Role
+                              select p.Id).FirstOrDefault();
+
+                string concatenatedId = CreatePartnerConcatenatedId(n.NotificationSapId, employeeId, roleId);
+
+                if (partners.ContainsKey(concatenatedId))
+                {
+                    listOfPartnerTobeDeleted.Remove(concatenatedId);
+                }
+                else
+                {
+                    listOfPartnerTobeAdded.Add(partner);
+                }
+            }
+            if (listOfPartnerTobeDeleted.Any())
+            {
+                foreach (NotificationPartner partner in listOfPartnerTobeDeleted.Values)
+                {
+                    _context.NotificationPartner.Remove(partner);
+                }
+            }
+            if (listOfPartnerTobeAdded.Any())
+            {
+                foreach (Partner partner in listOfPartnerTobeAdded)
+                {
+                    try
+                    {                        
+                        var p = _notificationPartnerMappingService.Map(Tuple.Create(partner, n));
+                        AddPartner(p);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        continue;
+                    }
+
+                }
+            }
+        }
+
+        public void DeletePartner(NotificationPartner partner)
+        {
+            _context.NotificationPartner.Remove(partner);
         }
     }
 }

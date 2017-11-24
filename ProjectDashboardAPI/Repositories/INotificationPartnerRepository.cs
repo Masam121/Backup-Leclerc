@@ -9,9 +9,13 @@ namespace ProjectDashboardAPI.Repositories
 {
     public interface INotificationPartnerRepository
     {
-        Task<IEnumerable<NotificationPartner>> ReadAllPartnersFromNotification(Notification notification);
+        Task<List<NotificationPartner>> ReadManyPartnersByNotification(Notification notification);
         Task<ProjectNetflixContributor> CreateProjectNetflixContributor(NotificationPartner partner);
         Task<List<NotificationPartner>> ReadAsyncPartnerByEmployeeId(int id);
         Task<IEnumerable<PartnerDto>> CreateNotificationPartnersDto(Notification notification);
+        Task<NotificationPartner> CreateNotificationPartnerEntity(Partner partner, Notification notification);
+        void UpdatePartner(NotificationSAP notification);
+        void AddPartner(NotificationPartner partner);
+        void DeletePartner(NotificationPartner partner);
     }
 }
