@@ -118,7 +118,7 @@ namespace ProjectDashboardAPI.Services
         public async Task<List<NotificationDto>> GetProjectNotification(string projectId)
         {
             List<NotificationDto> notificationList = new List<NotificationDto>();
-            var project = _projectRepository.ReadOneAsyncBySAPId(Convert.ToInt64(projectId));
+            Project project = _projectRepository.ReadOneAsyncBySAPId(projectId).Result;
 
             return await _notificationRepository.ReadManyAsyncProjectNotification(project.Id);
         }
@@ -126,9 +126,8 @@ namespace ProjectDashboardAPI.Services
         public async Task<IActionResult> RefreshNotificationsData()
         {
             IEnumerable<NotificationSAP> notifications = new List<NotificationSAP>();
-            notifications = _SAPService.GetSapNotification().Result;
-
-            List<String> ExistingNotificationsInDatabase = _notificationRepository.ReadManyAsyncNotificationSAPId().Result;              
+            notifications = await _SAPService.GetSapNotification();
+            List<String> ExistingNotificationsInDatabase = await _notificationRepository.ReadManyAsyncNotificationSAPId();
 
             foreach (NotificationSAP notification in notifications)
             {
@@ -156,12 +155,12 @@ namespace ProjectDashboardAPI.Services
                         {
                             Console.WriteLine(ex.Message);
                             continue;
-                        }                      
+                        }
                     }
                 }
                 else
                 {
-                    if (_notificationRepository.VerifiyIfNotificationAsBeenUpdated(notificationEntitity).Result)
+                    if (await _notificationRepository.VerifiyIfNotificationAsBeenUpdated(notificationEntitity))
                     {
                         _notificationRepository.UpdateNotification(notificationEntitity);
                     }
@@ -186,7 +185,7 @@ namespace ProjectDashboardAPI.Services
             deleteUnexistingNotificationInSAP(ExistingNotificationsInDatabase);
 
             _notificationRepository.SaveData();
-            return new ObjectResult("Successfully refreshed...");
+            return new ObjectResult("Successfully refreshed...");            
         }
     }
 }

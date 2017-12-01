@@ -43,9 +43,9 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(project_netxlix_card);
         }
 
-        public Task<Project> ReadOneAsyncBySAPId(long id)
+        public Task<Project> ReadOneAsyncBySAPId(string id)
         {
-            var project = _context.Project.FirstOrDefault(t => t.ProjectSapId == id.ToString());
+            var project = _context.Project.FirstOrDefault(t => t.ProjectSapId == id);
             return System.Threading.Tasks.Task.FromResult(project);
         }
 

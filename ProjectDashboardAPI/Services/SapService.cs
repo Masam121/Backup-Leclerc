@@ -12,6 +12,21 @@ namespace ProjectDashboardAPI.Services
 {
     public class SapService : ISapService
     {
+        public async Task<IEnumerable<EmployeeSAP>> GetSapEmployee()
+        {
+            IEnumerable<EmployeeSAP> employeesSAP = new List<EmployeeSAP>();
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var data = await client.GetAsync(string.Concat("http://api.dev.gbl/v3/", "employees"));
+                data.EnsureSuccessStatusCode();
+                var stringResult = await data.Content.ReadAsStringAsync();
+                employeesSAP = JsonConvert.DeserializeObject<IEnumerable<EmployeeSAP>>(stringResult);
+            }
+            return employeesSAP;
+        }
+
         public async Task<IEnumerable<NotificationSAP>> GetSapNotification()
         {
             IEnumerable<NotificationSAP> notificationsSAP = new List<NotificationSAP>();

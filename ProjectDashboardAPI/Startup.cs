@@ -43,6 +43,7 @@ namespace NetflixAPI
             services.AddSingleton<ISapService, SapService>();
             services.AddSingleton<INotificationService, NotificationService>();
             services.AddSingleton<ITaskService, TaskService>();
+            services.AddSingleton<IEmployeeService, EmployeeService>();
 
             services.AddSingleton<IMapper<Notification, NotificationDto>, NotificationEntityToNotificationDtoMapper>();
             services.AddSingleton<IMapper<Tuple<Employe, Role>, PartnerDto>, NotificationPartnerToPartnerDtoMapper>();

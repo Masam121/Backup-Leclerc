@@ -11,5 +11,6 @@ namespace ProjectDashboardAPI.Services
     {
         Task<IEnumerable<ProjectSAP>> GetSapProject();
         Task<IEnumerable<NotificationSAP>> GetSapNotification();
+        Task<IEnumerable<EmployeeSAP>> GetSapEmployee();
     }
 }

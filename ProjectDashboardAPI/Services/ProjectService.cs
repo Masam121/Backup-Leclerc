@@ -128,7 +128,7 @@ namespace ProjectDashboardAPI.Services
             return projects;
         }
 
-        public async Task<Project> GetProjectById(long id)
+        public async Task<Project> GetProjectById(string id)
         {
             var project = await _projectRepository.ReadOneAsyncBySAPId(id);
             return project;
@@ -284,7 +284,7 @@ namespace ProjectDashboardAPI.Services
                 {
                     foreach (String projectSAPId in ExistingProjects)
                     {
-                        Project projectToBeDeleted = await _projectRepository.ReadOneAsyncBySAPId(Convert.ToInt64(projectSAPId));
+                        Project projectToBeDeleted = await _projectRepository.ReadOneAsyncBySAPId(projectSAPId);
 
                         if (projectToBeDeleted != null)
                         {

@@ -11,7 +11,7 @@ namespace ProjectDashboardAPI.Repositories
         Task<Project> CreateProject(ProjectSAP projectSAP, Budget budget);
         Task<ProjectNetflixCard> CreateProjectNetflixCard(Project project);
         Task<IEnumerable<Project>> ReadManyAsync();
-        Task<Project> ReadOneAsyncBySAPId(long id);
+        Task<Project> ReadOneAsyncBySAPId(string id);
         Task<Project> ReadOneAsyncById(long id);
         Task<ProjectNetflix> CreateProjectNetflix(Project project);
         Task<IEnumerable<Notification>> ReadManyAsyncNotificationByProjectId(long id);

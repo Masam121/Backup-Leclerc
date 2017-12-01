@@ -123,11 +123,11 @@ namespace ProjectDashboardAPI.Repositories
 
         public Task<List<NotificationPartner>> ReadManyPartnersByNotification(Notification notification)
         {
-            List<NotificationPartner> notificaitionPartners = (from p in _context.NotificationPartner
+            IEnumerable<NotificationPartner> notificaitionPartners = (from p in _context.NotificationPartner
                                                                where p.NotificationId == notification.Id
                                                                select p).ToList();
 
-            return System.Threading.Tasks.Task.FromResult(notificaitionPartners);
+            return System.Threading.Tasks.Task.FromResult(notificaitionPartners.ToList());
         }
 
         public Task<List<NotificationPartner>> ReadAsyncPartnerByEmployeeId(int id)
@@ -204,7 +204,7 @@ namespace ProjectDashboardAPI.Repositories
 
         public void DeletePartner(NotificationPartner partner)
         {
-            _context.NotificationPartner.Remove(partner);
+            _context.Remove(partner);
         }
     }
 }

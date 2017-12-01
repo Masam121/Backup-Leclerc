@@ -8,88 +8,26 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using ProjectDashboardAPI;
+using ProjectDashboardAPI.Services;
 
 namespace NetflixAPI.Controllers
 {
     [Route("api/[controller]")]
     public class EmployeController : Controller
     {
-        private readonly netflix_prContext _context;
-        public EmployeController(netflix_prContext context)
+        private readonly IEmployeeService _employeeService;
+
+        public EmployeController(netflix_prContext context, IEmployeeService employeeService)
         {
-            _context = context;
-        }
-
-        protected ProjectNetflixCard CreateNetflixProjectCard(Project project)
-        {
-            ProjectNetflixCard project_netxlix_card = new ProjectNetflixCard();
-            var manager = (from p in _context.Employe
-                           where p.Id == project.ProjectManagerId
-                           select p).FirstOrDefault();
-
-            if (manager == null)
-            {
-                project_netxlix_card.ManagerName = "Unknown";
-                project_netxlix_card.ManagerPicture = "http://www.getsmartcontent.com/content/uploads/2014/08/shutterstock_149293433.jpg";
-            }
-            else
-            {
-                project_netxlix_card.ManagerName = manager.Name;
-                project_netxlix_card.ManagerPicture = manager.Picture;
-            }
-
-            project_netxlix_card.Id = project.Id;
-            project_netxlix_card.ProjectManagerId = project.ProjectManagerId;
-            project_netxlix_card.ProjectName = project.ProjectName;
-            project_netxlix_card.ProjectOwnerId = project.ProjectOwnerId;
-            project_netxlix_card.ProjectSapId = project.ProjectSapId;
-            project_netxlix_card.ProjectsClient = project.ProjectsClient;
-            project_netxlix_card.ProjectStatus = project.ProjectStatus;
-            project_netxlix_card.StartDate = project.StartDate;
-            project_netxlix_card.Thumbnail = project.Thumbnail;
-            project_netxlix_card.EstEndDate = project.EstEndDate != null ? project.EstEndDate.Value.ToString("MMMM, yyyy") : "n/a";
-            project_netxlix_card.Department = project.Department;
-            project_netxlix_card.CompletionPercentage = project.CompletionPercentage;
-            project_netxlix_card.Factory = project.Factory;
-
-            return project_netxlix_card;
-        }
-
-        [HttpGet]
-        public IEnumerable<Employe> Get()
-        {
-            return _context.Employe.ToList();
-        }
+            _employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
+        }      
 
         [HttpGet("{id}", Name = "GetEmploye")]
-        public IActionResult GetById(string id)
+        public async Task<IActionResult> GetById(string id)
         {
-            var employee = _context.Employe.FirstOrDefault(t => t.IdSAP == id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-            else
-            {               
-                EmployeeNetflixDetail employee_detail_netflix = new EmployeeNetflixDetail()
-                {
-                    Id = employee.Id,
-                    Department = employee.Department,
-                    Factory = employee.Factory,
-                    HiredDate = employee.HiredDate.ToString("MMMM, yyyy"),
-                    LeclercEmail = employee.LeclercEmail,
-                    Name = employee.Name,
-                    Picture = employee.Picture,
-                    O365Id = employee.O365Id,
-                    ProjectWorkRatio = employee.ProjectWorkRatio,
-                    SuperiorId = employee.SuperiorId,
-                    Title = employee.Title,
-                    Workload = employee.Workload,
-                    IdSAP = employee.IdSAP
-                };
-                return new ObjectResult(employee_detail_netflix);
-            }
+            EmployeeNetflixDetail employee = await _employeeService.GetEmployeeById(id);
 
+            return Ok(employee);
         }
 
         //    while (StartDate < latestDate)
@@ -116,39 +54,19 @@ namespace NetflixAPI.Controllers
         //    task_effort_netflix.Add(inProgressEffort);
         //    task_effort_netflix.Add(TimeAvailable);
 
-        [HttpGet("{id}/ratio", Name = "GetEmployeRatio")]
-        public IActionResult GetEmployeeRatio(long id)
-        {
-            var employee = _context.Employe.FirstOrDefault(t => t.Id == id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                return new ObjectResult(employee.ProjectWorkRatio);
-            }
-        }
-
-        [HttpGet("Project-manager", Name = "GetProjectManager")]
-        public IEnumerable<Employe> GetProjectManager()
-        {
-            var projectManagerIds = (from p in _context.Project
-                                     select p.ProjectManagerId).Distinct().ToList();
-            List<Employe> projectManagers = new List<Employe>();
-            foreach (int? Id in projectManagerIds)
-            {
-                var projectManager = (from p in _context.Employe
-                                      where p.Id == Id
-                                      select p).FirstOrDefault();
-                if (projectManager == null)
-                {
-                    continue;
-                }
-                projectManagers.Add(projectManager);
-            }
-            return projectManagers;
-        } 
+        //[HttpGet("{id}/ratio", Name = "GetEmployeRatio")]
+        //public IActionResult GetEmployeeRatio(long id)
+        //{
+        //    var employee = _context.Employe.FirstOrDefault(t => t.Id == id);
+        //    if (employee == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    else
+        //    {
+        //        return new ObjectResult(employee.ProjectWorkRatio);
+        //    }
+        //}
 
         //[HttpGet("Project-manager/Overloaded", Name = "GetOverloadedProjectManager")]
         //public IEnumerable<ProjectNetflixContributor> GetOverloadedProjectManager()
@@ -209,99 +127,37 @@ namespace NetflixAPI.Controllers
         //    return overloadedProjectManagers;
         //}
 
-        [HttpPost]
-        public async Task<IActionResult> PostEmployees()
+        [HttpGet("Refresh", Name = "RefreshEmployees")]
+        public async Task<IActionResult> RefreshEmployees()
         {
-            IEnumerable<EmployeeSAP> Employees = new List<EmployeeSAP>();
-            using (HttpClient client = new HttpClient())
+            try
             {
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                var data = await client.GetAsync(string.Concat("http://api.dev.gbl/v3/", "employees"));
-                data.EnsureSuccessStatusCode();
-                var stringResult = await data.Content.ReadAsStringAsync();
-                Employees = JsonConvert.DeserializeObject<IEnumerable<EmployeeSAP>>(stringResult);
-
-                foreach (EmployeeSAP employeeSAP in Employees)
-                {
-                    Employe employee = new Employe();
-                    employee.Department = employeeSAP.department;
-                    employee.Factory = employeeSAP.factory;
-                    employee.HiredDate = Convert.ToDateTime(employeeSAP.hiredDate);
-                    employee.IdSAP = employeeSAP.id_SAP.TrimStart('0');
-                    employee.LeclercEmail = employeeSAP.leclercEmail;
-                    employee.Name = employeeSAP.name;
-                    employee.O365Id = employeeSAP.o365;
-                    employee.Picture = employeeSAP.picture;
-                    employee.Workload = Convert.ToInt32(double.Parse(employeeSAP.workload, System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo));
-                    employee.Title = employeeSAP.title;
-                    //employee.SuperiorId = string.IsNullOrEmpty(employeeSAP.superior) ? (int?)null : int.Parse(employeeSAP.superior);
-                    employee.ProjectWorkRatio = 100;
-
-                    Employe employeeExists = _context.Employe.FirstOrDefault(x => x.IdSAP == employee.IdSAP);
-
-                    if (employeeExists != null)
-                    {
-                        if (employeeExists.Department == employee.Department &&
-                            employeeExists.Factory == employee.Factory &&
-                            employeeExists.HiredDate == employee.HiredDate &&
-                            employeeExists.IdSAP == employee.IdSAP &&
-                            employeeExists.LeclercEmail == employee.LeclercEmail &&
-                            employeeExists.Name == employee.Name &&
-                            employeeExists.O365Id == employee.O365Id &&
-                            employeeExists.Picture == employee.Picture &&
-                            employeeExists.Workload == employee.Workload &&
-                            employeeExists.Title == employee.Title &&
-                            //employeeExists.SuperiorId == employee.SuperiorId &&
-                            employeeExists.ProjectWorkRatio == employee.ProjectWorkRatio)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            employeeExists.Department = employee.Department;
-                            employeeExists.Factory = employee.Factory;
-                            employeeExists.HiredDate = employee.HiredDate;
-                            employeeExists.IdSAP = employee.IdSAP;
-                            employeeExists.LeclercEmail = employee.LeclercEmail;
-                            employeeExists.Name = employee.Name;
-                            employeeExists.O365Id = employee.O365Id;
-                            employeeExists.Picture = employee.Picture;
-                            employeeExists.Workload = employee.Workload;
-                            employeeExists.Title = employee.Title;
-                            //employeeExists.SuperiorId = employee.SuperiorId;
-                            employeeExists.ProjectWorkRatio = employee.ProjectWorkRatio;
-                            _context.Employe.Update(employeeExists);
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        _context.Add(employee);
-                    }
-                }
-                _context.SaveChanges();
-                return new ObjectResult("Successfully added to data base...");
+                var response = await _employeeService.RefreshEmployee();
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
             }
         }
 
-        [HttpPost("{id}/ratio", Name = "GetEmployeRatio")]
-        public IActionResult PostEmployeeRatio(long id, string ratio)
-        {
-            Console.WriteLine(id);
-            Console.WriteLine(ratio);
-            var employee = _context.Employe.FirstOrDefault(t => t.Id == id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                employee.ProjectWorkRatio = Int32.Parse(ratio);
-                _context.Employe.Update(employee);
-                _context.SaveChanges();
-                return new ObjectResult(employee.ProjectWorkRatio);
-            }
-        }
+        //[HttpPost("{id}/ratio", Name = "GetEmployeRatio")]
+        //public IActionResult PostEmployeeRatio(long id, string ratio)
+        //{
+        //    Console.WriteLine(id);
+        //    Console.WriteLine(ratio);
+        //    var employee = _context.Employe.FirstOrDefault(t => t.Id == id);
+        //    if (employee == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    else
+        //    {
+        //        employee.ProjectWorkRatio = Int32.Parse(ratio);
+        //        _context.Employe.Update(employee);
+        //        _context.SaveChanges();
+        //        return new ObjectResult(employee.ProjectWorkRatio);
+        //    }
+        //}
     }
 }

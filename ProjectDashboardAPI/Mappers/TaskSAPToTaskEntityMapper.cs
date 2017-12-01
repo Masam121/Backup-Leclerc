@@ -52,7 +52,7 @@ namespace ProjectDashboardAPI.Mappers
         {                     
             Task taskEntity = new Task();
 
-            taskEntity.NotificationId = _notificationRepository.ReadOneAsyncNotificationIdByNotificationSAPId(entity.Item2.NotificationSapId).Result;
+            taskEntity.Notification = entity.Item2;
             taskEntity.ConcatenatedId = CreateTaskConcatenatedId(entity.Item2.NotificationSapId, entity.Item1.TaskKey);
             taskEntity.Description = entity.Item1.Description;
             taskEntity.Type = entity.Item1.Type;

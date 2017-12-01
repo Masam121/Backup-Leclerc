@@ -43,7 +43,7 @@ namespace NetflixAPI.Controllers
         [HttpGet("{id}", Name = "GetProject")]
         public async Task<IActionResult> GetById(long id)
         {
-            Project project = await _projectService.GetProjectById(id);
+            Project project = await _projectService.GetProjectById(id.ToString());
 
             if (project == null)
             {
@@ -83,11 +83,11 @@ namespace NetflixAPI.Controllers
         }*/
 
         [HttpGet("Overdue", Name = "GetOverdueProject")]
-        public async Task<IEnumerable<Models.ProjectNetflixCard>> GetOverdueProject()
+        public async Task<IActionResult> GetOverdueProject()
         {
-            IEnumerable<Models.ProjectNetflixCard> projects = await _projectService.GetOverdueProjects();
+            IEnumerable<ProjectNetflixCard> projects = await _projectService.GetOverdueProjects();
 
-            return projects;           
+            return Ok(projects);           
         }
 
         [HttpGet("Filter", Name = "GetFilteredProject")]
