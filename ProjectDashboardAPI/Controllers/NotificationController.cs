@@ -56,6 +56,12 @@ namespace ProjectDashboardAPI.Controllers
             return Ok(await _notificationService.GetEmployeeNotifications(id));           
         }
 
+        [HttpGet("employee/{id}/workload", Name = "getByEmployeeIdNotificationsWorkload")]
+        public async Task<IActionResult> getByEmployeeIdNotificationsWorkload(string id)
+        {
+            return Ok(await _notificationService.GetEmployeeNotificationsWorkload(id));
+        }
+
         [HttpGet("Refresh", Name = "RefreshNotifications")]
         public async Task<IActionResult> RefreshNotifications()
         {

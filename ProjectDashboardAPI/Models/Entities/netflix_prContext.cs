@@ -273,6 +273,14 @@ namespace ProjectDashboardAPI
                     .HasColumnName("role_id")
                     .HasColumnType("int(10)");
 
+                entity.Property(e => e.EstEffort)
+                    .HasColumnName("est_effort")
+                    .HasColumnType("double");
+
+                entity.Property(e => e.actualEffort)
+                    .HasColumnName("actual_effort")
+                    .HasColumnType("double");
+
                 entity.HasOne(d => d.Notification)
                     .WithMany(p => p.NotificationPartner)
                     .HasForeignKey(d => d.NotificationId)

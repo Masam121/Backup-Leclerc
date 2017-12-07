@@ -41,6 +41,49 @@ namespace ProjectDashboardAPI.Services
             _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
         }
 
+        public List<string> getListOfMonthBetweenTwoDates(DateTime start, DateTime End)
+        {
+            var diff = Enumerable.Range(0, Int32.MaxValue)
+                                 .Select(e => start.AddMonths(e))
+                                 .TakeWhile(e => e <= End)
+                                 .Select(e => e.ToString("MMMM"));
+
+            return diff.ToList();
+        }
+
+        public List<string> createTimeLine()
+        {
+            var start = DateTime.Today;
+
+            var timeLineStart = start.AddMonths(-3);
+            var timeLineEnd = start.AddMonths(9);
+
+            // set end-date to end of month
+            timeLineEnd = new DateTime(timeLineEnd.Year, timeLineEnd.Month, DateTime.DaysInMonth(timeLineEnd.Year, timeLineEnd.Month));
+
+            var diff = getListOfMonthBetweenTwoDates(timeLineStart , timeLineEnd);
+
+            return diff.ToList();
+        }
+
+        public double getMonthlyWorkload(List<string> notificationtimeLine, double effort)
+        {
+            int numberOfMouth = notificationtimeLine.Count();
+
+            double monthlyWorkload = effort / numberOfMouth;
+
+            return monthlyWorkload;
+        }
+
+        public Dictionary<string, double> createTimelineDictionnary(List<string> timeLine) {
+            Dictionary<string, double> dico = new Dictionary<string, double>();
+            foreach(string month in timeLine)
+            {
+                dico.Add(month, 0);
+            }
+            return dico;
+        }
+
         public void deleteUnexistingNotificationInSAP(List<String> notificationsId)
         {
             if (notificationsId.Any())
@@ -123,6 +166,58 @@ namespace ProjectDashboardAPI.Services
             return await _notificationRepository.ReadManyAsyncProjectNotification(project.Id);
         }
 
+        public async Task<List<double>> getEmployeeMonthlyWorkload(int employeeId)
+        {
+            double averageNumberOfWeekPerMonth = 4.33;
+            var employee = await _employeeRepository.ReadOneAsyncById(employeeId);
+
+            double monthlyWorkload = (double)(averageNumberOfWeekPerMonth * employee.ProjectWorkRatio * employee.Workload);
+
+            List<string> timeLine = createTimeLine();
+            Dictionary<string, double> dictionnaryMonthlyWorkloadTimeLine = createTimelineDictionnary(timeLine);
+
+            foreach(var month in dictionnaryMonthlyWorkloadTimeLine.Keys)
+            {
+                dictionnaryMonthlyWorkloadTimeLine[month] = monthlyWorkload;
+            }
+
+            return dictionnaryMonthlyWorkloadTimeLine.Values.ToList();
+        }
+
+        public async Task<WorkloadDataDto> GetEmployeeNotificationsWorkload(string id)
+        {
+            int employeeId = await _employeeRepository.ReadAsyncEmployeeId(id);
+
+            List<NotificationPartner> partners = await _notificationPartnerRepository.ReadAsyncPartnerByEmployeeId(employeeId);
+
+            List<string> timeLine = createTimeLine();
+            Dictionary<string, double> dictionnaryActualEffortTimeLine = createTimelineDictionnary(timeLine);
+            Dictionary<string, double> dictionnaryEstimatedEffortTimeLine = createTimelineDictionnary(timeLine);
+
+            foreach (NotificationPartner partner in partners)
+            {
+                Notification notification = await _notificationRepository.ReadOneAsyncNotificationById(partner.NotificationId);
+                List<string> notificationtimeLine = getListOfMonthBetweenTwoDates(Convert.ToDateTime(notification.CreationDate), Convert.ToDateTime(notification.EstEndDate));
+
+                double actualMonthlyWorkload = getMonthlyWorkload(notificationtimeLine, partner.actualEffort);
+                double estimatedMonthlyWorkload = getMonthlyWorkload(notificationtimeLine, partner.EstEffort);
+
+                foreach (string month in notificationtimeLine)
+                {
+                    dictionnaryActualEffortTimeLine[month] = actualMonthlyWorkload;
+                    dictionnaryEstimatedEffortTimeLine[month] = estimatedMonthlyWorkload;
+                }
+            }
+
+            WorkloadDataDto workload = new WorkloadDataDto();
+            workload.MonthCategory = timeLine;
+            workload.EstimatedSerie = dictionnaryEstimatedEffortTimeLine.Values.ToList();
+            workload.ActualSerie = dictionnaryActualEffortTimeLine.Values.ToList();
+            workload.MonthlyWorkload = await getEmployeeMonthlyWorkload(employeeId);
+
+            return workload;
+        }
+
         public async Task<IActionResult> RefreshNotificationsData()
         {
             IEnumerable<NotificationSAP> notifications = new List<NotificationSAP>();
@@ -187,5 +282,7 @@ namespace ProjectDashboardAPI.Services
             _notificationRepository.SaveData();
             return new ObjectResult("Successfully refreshed...");            
         }
+
+        
     }
 }

@@ -10,6 +10,8 @@ namespace ProjectDashboardAPI
         public int NotificationId { get; set; }
         public int? RoleId { get; set; }
         public string ConcatenatedId { get; set; }
+        public double EstEffort { get; set; }
+        public double actualEffort { get; set; }
 
         public virtual Role Role { get; set; }
         public virtual Notification Notification { get; set; }
