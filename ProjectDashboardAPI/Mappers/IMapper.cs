@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Mappers
 {
-    public interface IMapper<TSource , TDestination>
+    public interface IMapper<TContext, TSource , TDestination>
     {
-        TDestination Map(TSource entity);
+        TDestination Map(TContext context, TSource entity);
     }
 }

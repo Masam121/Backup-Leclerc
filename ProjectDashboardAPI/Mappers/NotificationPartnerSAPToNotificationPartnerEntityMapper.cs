@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Mappers
 {
-    public class NotificationPartnerSAPToNotificationPartnerEntityMapper : IMapper<Tuple<Partner, Notification>, NotificationPartner>
+    public class NotificationPartnerSAPToNotificationPartnerEntityMapper : IMapper<netflix_prContext, Tuple<Partner, Notification>, NotificationPartner>
     {
         private IEmployeeRepository _emplopyeeRepository;
         private IRoleRepository _roleRepository;
@@ -33,13 +33,13 @@ namespace ProjectDashboardAPI.Mappers
             return concatenatedId;
         }
 
-        public NotificationPartner Map(Tuple<Partner, Notification> entity)
+        public NotificationPartner Map(netflix_prContext context, Tuple<Partner, Notification> entity)
         {
             NotificationPartner partnerEntity = new NotificationPartner();
 
             partnerEntity.Notification = entity.Item2;
             string employeeSAPId = TrimZerosFromSAPId(entity.Item1.EmployeId);
-            int employeeId = _emplopyeeRepository.ReadAsyncEmployeeId(employeeSAPId).Result;
+            int employeeId = _emplopyeeRepository.ReadAsyncEmployeeId(context, employeeSAPId).Result;
 
             if (employeeId != 0)
             {
@@ -50,7 +50,7 @@ namespace ProjectDashboardAPI.Mappers
                 throw new System.ArgumentException("A partner needs an employeeId to be valid");
             }
 
-            int roleId = _roleRepository.ReadOneRoleIdByRoleSigle(entity.Item1.Role).Result;
+            int roleId = _roleRepository.ReadOneRoleIdByRoleSigle(context, entity.Item1.Role).Result;
             if (roleId != 0)
             {
                 partnerEntity.RoleId = roleId;

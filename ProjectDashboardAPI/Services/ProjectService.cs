@@ -19,6 +19,12 @@ namespace ProjectDashboardAPI.Services
 
         //Sorting Lists
         private List<string> allFacilitySorting = new List<string> { "1", "undefined" };
+
+        private List<string> Administration = new List<string> { "050", "060", "070", "150", "160", "910", "950", "960", "970" };
+        private List<string> Ventes = new List<string> { "370", "530", "550", "650", "670", "710", "750", "790" };
+        private List<string> Logistique = new List<string> { "450", "820", "850" };
+        private List<string> Support = new List<string> { "230", "250", "280", "290", "350"};
+
         private List<string> exceedingBudgetSorting = new List<string> { "En dépassement de budget", "Exceeding budget", "Exceder el persupuesto" };
         private List<string> exceedingXAmountSorting = new List<string> { "Coutant plus de 100 000$", "Cost more than 100 000$", "Coste de más de 100 000 $" };
         private List<string> lateSorting = new List<string> { "En retard", "Late", "Tarde" };
@@ -39,61 +45,105 @@ namespace ProjectDashboardAPI.Services
             _sapService = sapService ?? throw new ArgumentNullException(nameof(sapService));
         }
 
-        public List<NotificationPartner> GetAllPartnersFromNotifications(IEnumerable<Notification> notifications)
+        public List<NotificationPartner> GetAllPartnersFromNotifications( netflix_prContext context, IEnumerable<Notification> notifications)
         {
             List<NotificationPartner> partners = new List<NotificationPartner>();
             foreach (Notification notification in notifications)
             {
-                var notificationPartners = _notificaiotnPartnerRepository.ReadManyPartnersByNotification(notification);
+                var notificationPartners = _notificaiotnPartnerRepository.ReadManyPartnersByNotification(context, notification);
                 foreach (NotificationPartner partner in notificationPartners.Result)
                 {
                     partners.Add(partner);
                 }
             }
             List<NotificationPartner> noDupesPartners = partners.GroupBy(x => x.EmployeId).Select(y => y.First()).ToList();
-            return noDupesPartners;
+            return noDupesPartners;           
         }
 
-        public List<Project> VerifySorting(IEnumerable<Project> projectToBeSorted, string sorting)
+        public async Task<List<Project>> verifyAxeOrganisationnal(netflix_prContext context, IEnumerable<Project> projectToBeSorted, string axeOrganisationnal)
         {
             List<Project> projectSorted = new List<Project>();
             foreach (Project project in projectToBeSorted)
             {
-
-                ProjectNetflix project_netxlix = (_projectRepository.CreateProjectNetflix(project)).Result;
-
-                if (exceedingBudgetSorting.Contains(sorting))
+                ProjectNetflix project_netxlix = await (_projectRepository.CreateProjectNetflix(context, project));
+                if(project_netxlix.Department == "")
                 {
-                    if (project_netxlix.BudgetLeft < 0)
-                    {
-                        projectSorted.Add(project);
-                        continue;
-                    }
-                }
-                else if (exceedingXAmountSorting.Contains(sorting))
-                {
-                    if (project_netxlix.InitialBudget > 100000)
-                    {
-                        projectSorted.Add(project);
-                        continue;
-                    }
-                }
-                else if (lateSorting.Contains(sorting))
-                {
-                    if (project.EstEndDate < System.DateTime.Today)
-                    {
-                        projectSorted.Add(project);
-                        continue;
-                    }
-                }
-                else if (sorting == "undefined")
-                {
-                    projectSorted.Add(project);
                     continue;
+                }
+                string departmentId = project_netxlix.Department.Substring(0, 3);
+
+                if (axeOrganisationnal == "Administration")
+                {
+                    if (Administration.Contains(departmentId))
+                    {
+                        projectSorted.Add(project);
+                    }
+                }
+                if (axeOrganisationnal == "Ventes")
+                {
+                    if (Ventes.Contains(departmentId))
+                    {
+                        projectSorted.Add(project);
+                    }
+                }
+                if (axeOrganisationnal == "Logistique")
+                {
+                    if (Logistique.Contains(departmentId))
+                    {
+                        projectSorted.Add(project);
+                    }
+                }
+                if (axeOrganisationnal == "Support")
+                {
+                    if (Support.Contains(departmentId))
+                    {
+                        projectSorted.Add(project);
+                    }
                 }
             }
             return projectSorted;
         }
+
+            //public List<Project> VerifySorting(netflix_prContext context, IEnumerable<Project> projectToBeSorted, string sorting)
+            //{
+            //    List<Project> projectSorted = new List<Project>();
+            //    foreach (Project project in projectToBeSorted)
+            //    {
+
+            //        ProjectNetflix project_netxlix = (_projectRepository.CreateProjectNetflix(context, project)).Result;
+
+            //        if (exceedingBudgetSorting.Contains(sorting))
+            //        {
+            //            if (project_netxlix.BudgetLeft < 0)
+            //            {
+            //                projectSorted.Add(project);
+            //                continue;
+            //            }
+            //        }
+            //        else if (exceedingXAmountSorting.Contains(sorting))
+            //        {
+            //            if (project_netxlix.InitialBudget > 100000)
+            //            {
+            //                projectSorted.Add(project);
+            //                continue;
+            //            }
+            //        }
+            //        else if (lateSorting.Contains(sorting))
+            //        {
+            //            if (project.EstEndDate < System.DateTime.Today)
+            //            {
+            //                projectSorted.Add(project);
+            //                continue;
+            //            }
+            //        }
+            //        else if (sorting == "undefined")
+            //        {
+            //            projectSorted.Add(project);
+            //            continue;
+            //        }
+            //    }
+            //    return projectSorted;              
+            //}
 
         public String RemoveUnusedDigitFromSAPProjectId(String projectSAPidWithDigit)
         {
@@ -102,224 +152,230 @@ namespace ProjectDashboardAPI.Services
             return projectSAPIdwithoutUnusedDigit;
         }
 
-        public async Task<Project> CreateProject(ProjectSAP projectSAP, Budget budget)
+        public async Task<Project> CreateProject(netflix_prContext context, ProjectSAP projectSAP, Budget budget)
         {
-            Project project = await _projectRepository.CreateProject(projectSAP, budget);
-            return project;
+            Project project = await _projectRepository.CreateProject(context ,projectSAP, budget);
+            return project;               
         }
 
-        public async Task<ProjectNetflix> CreateProjectNetflix(Project project)
+        public async Task<ProjectNetflix> CreateProjectNetflix(netflix_prContext context, Project project)
         {
-            ProjectNetflix projectNetflix = await _projectRepository.CreateProjectNetflix(project);
+            ProjectNetflix projectNetflix = await _projectRepository.CreateProjectNetflix(context, project);
             return projectNetflix;
         }
 
         public async Task<IEnumerable<ProjectNetflixCard>> GetAllProjectNetflixCard()
         {
-            var allProjects = _projectRepository.ReadManyAsync();
-            List<ProjectNetflixCard> projects = new List<ProjectNetflixCard>();
-
-            foreach (Project project in allProjects.Result)
+            using (var context = new netflix_prContext())
             {
-                ProjectNetflixCard project_netxlix_card = await _projectRepository.CreateProjectNetflixCard(project);
-                projects.Add(project_netxlix_card);
-            }
+                var allProjects = _projectRepository.ReadManyAsync(context);
+                List<ProjectNetflixCard> projects = new List<ProjectNetflixCard>();
 
-            return projects;
+                foreach (Project project in allProjects.Result)
+                {
+                    ProjectNetflixCard project_netxlix_card = await _projectRepository.CreateProjectNetflixCard(context, project);
+                    projects.Add(project_netxlix_card);
+                }
+
+                return projects;
+            }              
         }
 
-        public async Task<Project> GetProjectById(string id)
+        public async Task<ProjectNetflix> GetProjectById(string id)
         {
-            var project = await _projectRepository.ReadOneAsyncBySAPId(id);
-            return project;
+            using (var context = new netflix_prContext())
+            {
+                var project = await _projectRepository.ReadOneAsyncBySAPId(context, id);
+
+                var projectNetflixDto = await CreateProjectNetflix(context, project);
+                return projectNetflixDto;
+            }                
         }
 
         public async Task<IEnumerable<ProjectNetflixContributor>> GetProjectContributors(long id)
         {
-            List<ProjectNetflixContributor> projectContributor = new List<ProjectNetflixContributor>();
-
-            var projectNotifications = await _projectRepository.ReadManyAsyncNotificationByProjectId(id);
-            List<NotificationPartner> partners = GetAllPartnersFromNotifications(projectNotifications);
-
-            foreach (NotificationPartner partner in partners)
+            using (var context = new netflix_prContext())
             {
-                ProjectNetflixContributor contributor_netflix = await _notificaiotnPartnerRepository.CreateProjectNetflixContributor(partner);
-                projectContributor.Add(contributor_netflix);
-            }
+                List<ProjectNetflixContributor> projectContributor = new List<ProjectNetflixContributor>();
 
-            return projectContributor;
+                var projectNotifications = await _projectRepository.ReadManyAsyncNotificationByProjectId(context, id);
+                List<NotificationPartner> partners = GetAllPartnersFromNotifications(context, projectNotifications);
+
+                foreach (NotificationPartner partner in partners)
+                {
+                    ProjectNetflixContributor contributor_netflix = await _notificaiotnPartnerRepository.CreateProjectNetflixContributor(context, partner);
+                    projectContributor.Add(contributor_netflix);
+                }
+
+                return projectContributor;
+            }                
         }
 
         public async Task<IEnumerable<ProjectNetflixCard>> GetEmployeeAllWorkingProjects(string id)
         {
-            List<ProjectNetflixCard> projects = new List<ProjectNetflixCard>();
-            var employeeId = _employeeRepository.ReadAsyncEmployeeId(id);
-
-            List<NotificationPartner> partners = await _notificaiotnPartnerRepository.ReadAsyncPartnerByEmployeeId(employeeId.Result);           
-
-            List<int> partnerIdAlreadyAdded = new List<int>();
-            List<Notification> notifications = new List<Notification>();
-
-            foreach (var partner in partners)
+            using (var context = new netflix_prContext())
             {
-                if (!partnerIdAlreadyAdded.Contains(partner.NotificationId))
+                List<ProjectNetflixCard> projects = new List<ProjectNetflixCard>();
+                var employeeId = _employeeRepository.ReadAsyncEmployeeId(context, id);
+
+                List<NotificationPartner> partners = await _notificaiotnPartnerRepository.ReadAsyncPartnerByEmployeeId(context, employeeId.Result);
+
+                List<int> partnerIdAlreadyAdded = new List<int>();
+                List<Notification> notifications = new List<Notification>();
+
+                foreach (var partner in partners)
                 {
-                    Notification notification = await _notificationRepository.ReadOneAsyncNotificationById(partner.NotificationId);
-                    
-                    notifications.Add(notification);
-                    partnerIdAlreadyAdded.Add(partner.NotificationId);
+                    if (!partnerIdAlreadyAdded.Contains(partner.NotificationId))
+                    {
+                        Notification notification = await _notificationRepository.ReadOneAsyncNotificationById(context, partner.NotificationId);
+
+                        notifications.Add(notification);
+                        partnerIdAlreadyAdded.Add(partner.NotificationId);
+                    }
                 }
-            }
 
-            List<int> projectAlreadyAdded = new List<int>();
-            foreach (Notification notification in notifications)
-            {
-                var project = _projectRepository.ReadOneAsyncById(notification.ProjectId);
-
-                if (!projectAlreadyAdded.Contains(project.Id))
+                List<int> projectAlreadyAdded = new List<int>();
+                foreach (Notification notification in notifications)
                 {
-                    var p = _projectRepository.CreateProjectNetflixCard(project.Result);
+                    var project = _projectRepository.ReadOneAsyncById(context, notification.ProjectId);
 
-                    projects.Add(p.Result);
-                    projectAlreadyAdded.Add(p.Id);
+                    if (!projectAlreadyAdded.Contains(project.Id))
+                    {
+                        var p = _projectRepository.CreateProjectNetflixCard(context, project.Result);
+
+                        projects.Add(p.Result);
+                        projectAlreadyAdded.Add(p.Id);
+                    }
                 }
-            }
 
-            return projects;
+                return projects;
+            }               
         }
 
         public Task<IEnumerable<ProjectNetflixCard>> GetAllExceedingBudgetProjects()
         {
-            throw new NotImplementedException();
+            using (var context = new netflix_prContext())
+            {
+                throw new NotImplementedException();
+            }                
         }
 
         public async Task<IEnumerable<ProjectNetflixCard>> GetOverdueProjects()
         {
-            List<ProjectNetflixCard> projectNetflixCars = new List<ProjectNetflixCard>();
-
-            var projects = await _projectRepository.ReadManyAsync();
-
-            foreach (Project project in projects)
+            using (var context = new netflix_prContext())
             {
-                if (project.ProjectStatus == "Late")
+                List<ProjectNetflixCard> projectNetflixCars = new List<ProjectNetflixCard>();
+
+                var projects = await _projectRepository.ReadManyAsync(context);
+
+                foreach (Project project in projects)
                 {
-                    ProjectNetflixCard project_netxlix = await _projectRepository.CreateProjectNetflixCard(project);
-                    projectNetflixCars.Add(project_netxlix);
+                    if (project.ProjectStatus == "Late")
+                    {
+                        ProjectNetflixCard project_netxlix = await _projectRepository.CreateProjectNetflixCard(context, project);
+                        projectNetflixCars.Add(project_netxlix);
+                    }
                 }
+                return projectNetflixCars;
             }
-            return projectNetflixCars;
+                
         }
 
-        public async Task<IEnumerable<ProjectNetflix>> GetFiltredProject(string facility, string sorting, string department)
+        public async Task<IEnumerable<ProjectNetflix>> GetFiltredProject(string facility, string axeOrganisational, string department)
         {
-            List<ProjectNetflix> netflixProjectsFiltred = new List<ProjectNetflix>();
-            IEnumerable<Project> projects = await _projectRepository.ReadManyAsync();
+            using (var context = new netflix_prContext())
+            {
+                List<ProjectNetflix> netflixProjectsFiltred = new List<ProjectNetflix>();
+                IEnumerable<Project> projects = await _projectRepository.ReadManyAsync(context);
 
-            if (!allFacilitySorting.Contains(facility))
-            {
-                IEnumerable<Project> facilityProjects = await _projectRepository.ReadManyAsyncByFacilityId(facility);
-                projects = facilityProjects;
-            }
-            if (department != "undefined")
-            {
-                string departmentId = department.Substring(0, 3);
-                if (departmentId != "All")
+                if (!allFacilitySorting.Contains(facility))
                 {
-                    List<Project> departamentalProject = new List<Project>();
-                    foreach (Project project in projects)
+                    IEnumerable<Project> facilityProjects = await _projectRepository.ReadManyAsyncByFacilityId(context, facility);
+                    projects = facilityProjects;
+                }
+                if (department != "undefined")
+                {
+                    string departmentId = department.Substring(0, 3);
+                    if (departmentId != "All")
                     {
-                        if (project.Department != "")
+                        List<Project> departamentalProject = new List<Project>();
+                        foreach (Project project in projects)
                         {
-                            if (project.Department.Substring(0, 3) == departmentId)
+                            if (project.Department != "")
                             {
-                                departamentalProject.Add(project);
+                                if (project.Department.Substring(0, 3) == departmentId)
+                                {
+                                    departamentalProject.Add(project);
+                                }
                             }
                         }
+                        projects = departamentalProject;
                     }
-                    projects = departamentalProject;
                 }
-            }
-            if (sorting != "undefined")
-            {
-                projects = VerifySorting(projects, sorting);
-            }
-            foreach (Project project in projects)
-            {
-                netflixProjectsFiltred.Add((_projectRepository.CreateProjectNetflix(project)).Result);
-            }
-            return netflixProjectsFiltred;
+                if (axeOrganisational != "undefined")
+                {
+                    projects = await verifyAxeOrganisationnal(context, projects, axeOrganisational);
+                }
+                foreach (Project project in projects)
+                {
+                    netflixProjectsFiltred.Add((await _projectRepository.CreateProjectNetflix(context, project)));
+                }
+                return netflixProjectsFiltred;
+            }               
         }
 
         public async Task<IActionResult> RefreshProjectsData()
-        {                  
-            try
+        {
+            using (var context = new netflix_prContext())
             {
-                IEnumerable<ProjectSAP> projectsSap =  await _sapService.GetSapProject();
-                List<String> ExistingProjects = (await _projectRepository.ReadManyAsyncProjectSAPId()).ToList();
-
-                foreach (ProjectSAP projectSAP in projectsSap)
+                try
                 {
-                    if (projectSAP.projectStatus == "1-En attente" ||
-                        projectSAP.projectStatus == "2-En cours" ||
-                        projectSAP.projectStatus == "3-Terminé")
-                    {
-                        Budget budget = await _budgetRepository.CreateBudget(projectSAP.budget[0]);
+                    IEnumerable<ProjectSAP> projectsSap = await _sapService.GetSapProject();
+                    List<String> ExistingProjects = (await _projectRepository.ReadManyAsyncProjectSAPId(context)).ToList();
 
-                        var project =  await CreateProject(projectSAP, budget);
-                        if (await _projectRepository.VerifiyIfProjectExists(project))
+                    foreach (ProjectSAP projectSAP in projectsSap)
+                    {
+                        if (projectSAP.projectStatus == "1-En attente" ||
+                            projectSAP.projectStatus == "2-En cours" ||
+                            projectSAP.projectStatus == "3-Terminé")
                         {
-                            if(await _projectRepository.VerifiyIfProjectAsBeenUpdated(project))
+                            Budget budget = await _budgetRepository.CreateBudget(context, projectSAP.budget[0]);
+
+                            var project = await CreateProject(context, projectSAP, budget);
+                            if (await _projectRepository.VerifiyIfProjectExists(context, project))
                             {
-                                _projectRepository.UpdateProject(project);
+                                if (await _projectRepository.VerifiyIfProjectAsBeenUpdated(context, project))
+                                {
+                                    _projectRepository.UpdateProject(context, project);
+                                }
+                            }
+                            else
+                            {
+                                _projectRepository.AddProject(context, project);
+                            }
+                            ExistingProjects.Remove(RemoveUnusedDigitFromSAPProjectId(projectSAP.id_SAP));
+                        }
+                    }
+                    if (ExistingProjects.Any())
+                    {
+                        foreach (String projectSAPId in ExistingProjects)
+                        {
+                            Project projectToBeDeleted = await _projectRepository.ReadOneAsyncBySAPId(context, projectSAPId);
+
+                            if (projectToBeDeleted != null)
+                            {
+                                _projectRepository.DeleteProject(context, projectToBeDeleted);
                             }
                         }
-                        else
-                        {
-                            _projectRepository.AddProject(project);
-                        }
-                        ExistingProjects.Remove(RemoveUnusedDigitFromSAPProjectId(projectSAP.id_SAP));
                     }
+                    context.SaveChanges();
+                    return new ObjectResult("Successfully refreshed...");
                 }
-                if (ExistingProjects.Any())
+                catch (Exception ex)
                 {
-                    foreach (String projectSAPId in ExistingProjects)
-                    {
-                        Project projectToBeDeleted = await _projectRepository.ReadOneAsyncBySAPId(projectSAPId);
-
-                        if (projectToBeDeleted != null)
-                        {
-                            _projectRepository.DeleteProject(projectToBeDeleted);
-                        }
-                    }
+                    throw new Exception(ex.Message);
                 }
-                _projectRepository.SaveData();
-                return new ObjectResult("Successfully refreshed...");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            }               
         }
-
-        /*public async Task<IEnumerable<ProjectNetflixCard>> GetAllExceedingBudgetProjects()
-        {
-            List<ProjectNetflixCard> blabla = new List<ProjectNetflixCard>();
-            var projects = await _projectRepository.ReadAllAsync();
-
-            foreach (Project project in projects.Result)
-            {               
-                var budget = (from p in _context.Budget
-                              where p.Id == project.BudgetId
-                              select p).First();
-
-                if (budget.BudgetLeft < 0)
-                {
-                    ProjectNetflixCard project_netxlix_card = CreateNetflixProjectCard(project);
-                    exceedingBudgetProjects.Add(project_netxlix_card);
-                }
-            }
-
-            return new NotImplementedException();
-        }*/
     }
 }

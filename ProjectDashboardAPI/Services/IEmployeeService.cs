@@ -11,5 +11,7 @@ namespace ProjectDashboardAPI.Services
     {
         Task<EmployeeNetflixDetail> GetEmployeeById(string id);
         Task<IActionResult> RefreshEmployee();
+        Task<IActionResult> PostEmployeeRatio(long id, string ratio);
+        Task<string> GetEmployeeRatio(long id);
     }
 }

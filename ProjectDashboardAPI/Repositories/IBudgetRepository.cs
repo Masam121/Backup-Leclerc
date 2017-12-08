@@ -8,7 +8,7 @@ namespace ProjectDashboardAPI.Repositories
 {
     public interface IBudgetRepository
     {
-        Task<Budget> CreateBudget(BudgetSAP budgetSAP);
-        Task<Budget> ReadOneAsyncById(int id);
+        Task<Budget> CreateBudget(netflix_prContext context, BudgetSAP budgetSAP);
+        Task<Budget> ReadOneAsyncById(netflix_prContext context, int id);
     }
 }

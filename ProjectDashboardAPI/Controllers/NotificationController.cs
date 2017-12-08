@@ -36,7 +36,8 @@ namespace ProjectDashboardAPI.Controllers
         {
             if(departmentId.Substring(0, 3) == "All")
             {
-                return Ok(await GetAllNotifications());
+                List<NotificationDto> notificationList = await _notificationService.GetAllNotifications();
+                return Ok(notificationList);
             }
             else
             {

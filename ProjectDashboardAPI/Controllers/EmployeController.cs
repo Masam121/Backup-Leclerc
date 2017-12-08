@@ -141,23 +141,18 @@ namespace NetflixAPI.Controllers
             }
         }
 
-        //[HttpPost("{id}/ratio", Name = "GetEmployeRatio")]
-        //public IActionResult PostEmployeeRatio(long id, string ratio)
-        //{
-        //    Console.WriteLine(id);
-        //    Console.WriteLine(ratio);
-        //    var employee = _context.Employe.FirstOrDefault(t => t.Id == id);
-        //    if (employee == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    else
-        //    {
-        //        employee.ProjectWorkRatio = Int32.Parse(ratio);
-        //        _context.Employe.Update(employee);
-        //        _context.SaveChanges();
-        //        return new ObjectResult(employee.ProjectWorkRatio);
-        //    }
-        //}
+        [HttpGet("{id}/ratio", Name = "GetEmployeRatio")]
+        public async Task<IActionResult> GetEmployeeWorkingRatio(long id)
+        {
+            string ratio = await _employeeService.GetEmployeeRatio(id);
+            return Ok(ratio);
+        }
+
+        [HttpPost("{id}/ratio", Name = "PostEmployeRatio")]
+        public IActionResult PostEmployeeWorkingRatio(long id, string ratio)
+        {
+            _employeeService.PostEmployeeRatio(id, ratio);
+            return new ObjectResult(ratio);            
+        }
     }
 }

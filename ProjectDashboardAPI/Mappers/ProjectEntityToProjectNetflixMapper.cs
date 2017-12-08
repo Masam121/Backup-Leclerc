@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Mappers
 {
-    public class ProjectEntityToProjectNetflixMapper : IMapper<Project, ProjectNetflix>
+    public class ProjectEntityToProjectNetflixMapper : IMapper<netflix_prContext, Project, ProjectNetflix>
     {
         private IEmployeeRepository _emplopyeeRepository;
         private IBudgetRepository _budgetRepository;
@@ -18,14 +18,14 @@ namespace ProjectDashboardAPI.Mappers
             _budgetRepository = budgetRepository ?? throw new ArgumentNullException(nameof(budgetRepository));
         }
 
-        public ProjectNetflix Map(Project entity)
+        public ProjectNetflix Map(netflix_prContext context, Project entity)
         {
             ProjectNetflix project_netxlix = new ProjectNetflix();
 
             int managerId = entity.ProjectManagerId ?? default(int);
-            Employe manager = _emplopyeeRepository.ReadOneAsyncById(managerId).Result;
+            Employe manager = _emplopyeeRepository.ReadOneAsyncById(context, managerId).Result;
 
-            Budget budget = _budgetRepository.ReadOneAsyncById(entity.BudgetId).Result;
+            Budget budget = _budgetRepository.ReadOneAsyncById(context, entity.BudgetId).Result;
 
             //var expenses = (from p in _context.Expense
             //                where p.Budgetid == budget.Id

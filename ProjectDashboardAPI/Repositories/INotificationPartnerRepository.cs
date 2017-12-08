@@ -9,13 +9,13 @@ namespace ProjectDashboardAPI.Repositories
 {
     public interface INotificationPartnerRepository
     {
-        Task<List<NotificationPartner>> ReadManyPartnersByNotification(Notification notification);
-        Task<ProjectNetflixContributor> CreateProjectNetflixContributor(NotificationPartner partner);
-        Task<List<NotificationPartner>> ReadAsyncPartnerByEmployeeId(int id);
-        Task<IEnumerable<PartnerDto>> CreateNotificationPartnersDto(Notification notification);
-        Task<NotificationPartner> CreateNotificationPartnerEntity(Partner partner, Notification notification);
-        void UpdatePartner(NotificationSAP notification);
-        void AddPartner(NotificationPartner partner);
-        void DeletePartner(NotificationPartner partner);
+        Task<List<NotificationPartner>> ReadManyPartnersByNotification(netflix_prContext context, Notification notification);
+        Task<ProjectNetflixContributor> CreateProjectNetflixContributor(netflix_prContext context, NotificationPartner partner);
+        Task<List<NotificationPartner>> ReadAsyncPartnerByEmployeeId(netflix_prContext context, int id);
+        Task<IEnumerable<PartnerDto>> CreateNotificationPartnersDto(netflix_prContext context, Notification notification);
+        Task<NotificationPartner> CreateNotificationPartnerEntity(netflix_prContext context, Partner partner, Notification notification);
+        void UpdatePartner(netflix_prContext context, NotificationSAP notification);
+        void AddPartner(netflix_prContext context, NotificationPartner partner);
+        void DeletePartner(netflix_prContext context, NotificationPartner partner);
     }
 }

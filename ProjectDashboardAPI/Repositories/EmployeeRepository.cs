@@ -8,19 +8,12 @@ namespace ProjectDashboardAPI.Repositories
 {
     public class EmployeeRepository : IEmployeeRepository
     {
-        private readonly netflix_prContext _context;
-
-        public EmployeeRepository(netflix_prContext context)
+        public void AddEmployee(netflix_prContext context, Employe employeeEntity)
         {
-            _context = context;
+            context.Add(employeeEntity);
         }
 
-        public void AddEmployee(Employe employeeEntity)
-        {
-            _context.Add(employeeEntity);
-        }
-
-        public Task<Employe> CreateEmployee(EmployeeSAP employeeSAP)
+        public Task<Employe> CreateEmployee(netflix_prContext context, EmployeeSAP employeeSAP)
         {
             Employe employee = new Employe();
 
@@ -40,36 +33,36 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(employee);
         }
 
-        public Task<int> ReadAsyncEmployeeId(string id)
+        public Task<int> ReadAsyncEmployeeId(netflix_prContext context, string id)
         {
-            int employeeId = (from p in _context.Employe
+            int employeeId = (from p in context.Employe
                               where p.IdSAP == id
                               select p.Id).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(employeeId);
         }
 
-        public Task<Employe> ReadOneAsyncById(int id)
+        public Task<Employe> ReadOneAsyncById(netflix_prContext context, int id)
         {
-            Employe employee = (from p in _context.Employe
+            Employe employee = (from p in context.Employe
                               where p.Id == id
                               select p).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(employee);
         }
 
-        public Task<Employe> ReadOneAsyncBySAPId(string id)
+        public Task<Employe> ReadOneAsyncBySAPId(netflix_prContext context, string id)
         {
-            Employe employee = (from p in _context.Employe
+            Employe employee = (from p in context.Employe
                                 where p.IdSAP == id
                                 select p).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(employee);
         }
 
-        public void UpdateEmployee(Employe employeeEntity)
+        public void UpdateEmployee(netflix_prContext context, Employe employeeEntity)
         {
-            Employe existingEmployee = (from p in _context.Employe
+            Employe existingEmployee = (from p in context.Employe
                                 where p.Id == employeeEntity.Id
                                 select p).FirstOrDefault();
 
@@ -86,12 +79,12 @@ namespace ProjectDashboardAPI.Repositories
             //existingEmployee.SuperiorId = employeeEntity.SuperiorId;
             existingEmployee.ProjectWorkRatio = employeeEntity.ProjectWorkRatio;
 
-            _context.Employe.Update(existingEmployee);
+            context.Employe.Update(existingEmployee);
         }
 
-        public async Task<bool> VerifyIfEmployeeAsBeenModified(Employe employeeEntity)
+        public async Task<bool> VerifyIfEmployeeAsBeenModified(netflix_prContext context, Employe employeeEntity)
         {
-            Employe existingEmploye = await ReadOneAsyncBySAPId(employeeEntity.IdSAP);
+            Employe existingEmploye = await ReadOneAsyncBySAPId(context, employeeEntity.IdSAP);
 
             if (existingEmploye.Department == employeeEntity.Department &&
                             existingEmploye.Factory == employeeEntity.Factory &&
@@ -114,9 +107,9 @@ namespace ProjectDashboardAPI.Repositories
             }
         }
 
-        public Task<bool> VerifyIfEmployeeExistsBySapId(string id)
+        public Task<bool> VerifyIfEmployeeExistsBySapId(netflix_prContext context, string id)
         {
-            Employe employeeExists = _context.Employe.FirstOrDefault(x => x.IdSAP == id);
+            Employe employeeExists = context.Employe.FirstOrDefault(x => x.IdSAP == id);
             if(employeeExists != null)
             {
                 return System.Threading.Tasks.Task.FromResult(true);

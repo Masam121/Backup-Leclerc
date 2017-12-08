@@ -7,25 +7,18 @@ namespace ProjectDashboardAPI.Repositories
 {
     public class TaskOwnerRepository : ITaskOwnerRepository
     {
-        private readonly netflix_prContext _context;
-
-        public TaskOwnerRepository(netflix_prContext context)
-        {
-            _context = context;
-        }
-
         protected string TrimZerosFromSAPId(string id)
         {
             string trimedId = id.TrimStart('0');
             return trimedId;
         }
 
-        public void AddTaskOwner(TaskOwner taskOwner)
+        public void AddTaskOwner(netflix_prContext context, TaskOwner taskOwner)
         {
-            _context.TaskOwner.Add(taskOwner);
+            context.TaskOwner.Add(taskOwner);
         }
 
-        public Task<TaskOwner> CreateTaskOwner(string employeeId, Task task)
+        public Task<TaskOwner> CreateTaskOwner(netflix_prContext context, string employeeId, Task task)
         {
             if (employeeId == "" || employeeId == null)
             {
@@ -33,7 +26,7 @@ namespace ProjectDashboardAPI.Repositories
             }
             else
             {
-                int id = (from p in _context.Employe
+                int id = (from p in context.Employe
                                   where p.IdSAP == TrimZerosFromSAPId(employeeId)
                                   select p.Id).FirstOrDefault();
 
@@ -49,18 +42,18 @@ namespace ProjectDashboardAPI.Repositories
             }
         }
 
-        public Task<TaskOwner> ReadOneAsyncTaskOwnerByTaskId(int taskId)
+        public Task<TaskOwner> ReadOneAsyncTaskOwnerByTaskId(netflix_prContext context, int taskId)
         {
-            TaskOwner taskOwner = (from p in _context.TaskOwner
+            TaskOwner taskOwner = (from p in context.TaskOwner
                                         where p.TaskId == taskId
                                         select p).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(taskOwner);
         }
 
-        public void DeleteTaskOwner(TaskOwner taskOwner)
+        public void DeleteTaskOwner(netflix_prContext context, TaskOwner taskOwner)
         {
-            _context.TaskOwner.Remove(taskOwner);
+            context.TaskOwner.Remove(taskOwner);
         }
     }
 }

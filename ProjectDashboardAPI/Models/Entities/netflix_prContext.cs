@@ -274,12 +274,10 @@ namespace ProjectDashboardAPI
                     .HasColumnType("int(10)");
 
                 entity.Property(e => e.EstEffort)
-                    .HasColumnName("est_effort")
-                    .HasColumnType("double");
+                    .HasColumnName("est_effort");
 
                 entity.Property(e => e.actualEffort)
-                    .HasColumnName("actual_effort")
-                    .HasColumnType("double");
+                    .HasColumnName("actual_effort");
 
                 entity.HasOne(d => d.Notification)
                     .WithMany(p => p.NotificationPartner)

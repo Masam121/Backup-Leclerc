@@ -9,26 +9,26 @@ namespace ProjectDashboardAPI.Services
 {
     public class ProjectMappingService : IProjectMappingService
     {
-        private readonly IMapper<ProjectSAP, Project> _projectSAPToProjectEntityMapper;
-        private readonly IMapper<Project, ProjectNetflix> _projectEntityToProjectNetflixMapper;
+        private readonly IMapper<netflix_prContext, ProjectSAP, Project> _projectSAPToProjectEntityMapper;
+        private readonly IMapper<netflix_prContext, Project, ProjectNetflix> _projectEntityToProjectNetflixMapper;
  
         public ProjectMappingService(
-            IMapper<ProjectSAP, Project> projectSAPToProjectEntityMapper,
-            IMapper<Project, ProjectNetflix> projectEntityToProjectNetflixMapper
+            IMapper<netflix_prContext, ProjectSAP, Project> projectSAPToProjectEntityMapper,
+            IMapper<netflix_prContext, Project, ProjectNetflix> projectEntityToProjectNetflixMapper
         )
         {
             _projectSAPToProjectEntityMapper = projectSAPToProjectEntityMapper ?? throw new ArgumentNullException(nameof(projectSAPToProjectEntityMapper));
             _projectEntityToProjectNetflixMapper = projectEntityToProjectNetflixMapper ?? throw new ArgumentNullException(nameof(projectEntityToProjectNetflixMapper));            
         }
 
-        public Project Map(ProjectSAP entity)
+        public Project Map(netflix_prContext context, ProjectSAP entity)
         {
-            return _projectSAPToProjectEntityMapper.Map(entity);
+            return _projectSAPToProjectEntityMapper.Map(context, entity);
         }
 
-        public ProjectNetflix Map(Project entity)
+        public ProjectNetflix Map(netflix_prContext context, Project entity)
         {
-            return _projectEntityToProjectNetflixMapper.Map(entity);
+            return _projectEntityToProjectNetflixMapper.Map(context, entity);
         }
     }
 }

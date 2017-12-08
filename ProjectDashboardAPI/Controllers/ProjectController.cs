@@ -23,15 +23,6 @@ namespace NetflixAPI.Controllers
             _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
         }     
 
-        [HttpGet("test")]
-        public async Task<IActionResult> GetTest()
-        {
-            ProjectSAP project = new ProjectSAP();
-            Budget budget = new Budget();
-            var p = await _projectService.CreateProject(project, budget);
-            return Ok(p);
-        }
-
         [HttpGet]
         public async Task<IEnumerable<Models.ProjectNetflixCard>> Get()
         {
@@ -43,17 +34,12 @@ namespace NetflixAPI.Controllers
         [HttpGet("{id}", Name = "GetProject")]
         public async Task<IActionResult> GetById(long id)
         {
-            Project project = await _projectService.GetProjectById(id.ToString());
-
+            ProjectNetflix project = await _projectService.GetProjectById(id.ToString());
             if (project == null)
             {
                 return NotFound();
             }
-            else
-            {
-                ProjectNetflix project_netxlix = await _projectService.CreateProjectNetflix(project);
-                return Ok(project_netxlix);
-            }
+            return Ok(project);           
         }
 
         [HttpGet("{id}/Contributor", Name = "GetByProjectIdContributors")]
@@ -91,9 +77,9 @@ namespace NetflixAPI.Controllers
         }
 
         [HttpGet("Filter", Name = "GetFilteredProject")]
-        public async Task<IEnumerable<Models.ProjectNetflix>> GetFilteredProject(string facility, string sorting, string department)
+        public async Task<IEnumerable<Models.ProjectNetflix>> GetFilteredProject(string facility, string axeOrganisationnal, string department)
         {
-            IEnumerable<ProjectNetflix> netflixProjectsFiltred = await _projectService.GetFiltredProject(facility, sorting, department);
+            IEnumerable<ProjectNetflix> netflixProjectsFiltred = await _projectService.GetFiltredProject(facility, axeOrganisationnal, department);
            
             return netflixProjectsFiltred;
         }

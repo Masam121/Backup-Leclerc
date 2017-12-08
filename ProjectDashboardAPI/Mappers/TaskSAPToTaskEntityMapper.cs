@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Mappers
 {
-    public class TaskSAPToTaskEntityMapper : IMapper<Tuple<NotificationTask, Notification>, Task>
+    public class TaskSAPToTaskEntityMapper : IMapper<netflix_prContext, Tuple<NotificationTask, Notification>, Task>
     {
         private INotificationRepository _notificationRepository;
 
@@ -48,7 +48,7 @@ namespace ProjectDashboardAPI.Mappers
             return status;
         }
 
-        public Task Map(Tuple<NotificationTask, Notification> entity)
+        public Task Map(netflix_prContext context, Tuple<NotificationTask, Notification> entity)
         {                     
             Task taskEntity = new Task();
 

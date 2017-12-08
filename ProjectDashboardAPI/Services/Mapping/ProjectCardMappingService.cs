@@ -9,16 +9,16 @@ namespace ProjectDashboardAPI.Services.Mapping
 {
     public class ProjectCardMappingService : IProjectCardMappingService
     {
-        private readonly IMapper<Project, ProjectNetflixCard> _ProjectEntityToProjectNetflixCardMapper;
+        private readonly IMapper<netflix_prContext, Project, ProjectNetflixCard> _ProjectEntityToProjectNetflixCardMapper;
 
-        public ProjectCardMappingService(IMapper<Project, ProjectNetflixCard> projectEntityToProjectNetflixCardMapper)
+        public ProjectCardMappingService(IMapper<netflix_prContext ,Project, ProjectNetflixCard> projectEntityToProjectNetflixCardMapper)
         {
             _ProjectEntityToProjectNetflixCardMapper = projectEntityToProjectNetflixCardMapper ?? throw new ArgumentNullException(nameof(projectEntityToProjectNetflixCardMapper));
         }
         
-        public ProjectNetflixCard Map(Project entity)
+        public ProjectNetflixCard Map(netflix_prContext context, Project entity)
         {
-            return _ProjectEntityToProjectNetflixCardMapper.Map(entity);
+            return _ProjectEntityToProjectNetflixCardMapper.Map(context, entity);
         }
     }
 }

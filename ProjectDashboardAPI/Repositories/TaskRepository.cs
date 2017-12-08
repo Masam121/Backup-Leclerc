@@ -9,60 +9,58 @@ namespace ProjectDashboardAPI.Repositories
 {
     public class TaskRepository : ITaskRepository
     {
-        private readonly netflix_prContext _context;
         private ITaskMappingService _taskMappingService;
 
-        public TaskRepository(netflix_prContext context, ITaskMappingService taskMappingService)
+        public TaskRepository(ITaskMappingService taskMappingService)
         {
-            _context = context;
             _taskMappingService = taskMappingService ?? throw new ArgumentNullException(nameof(taskMappingService));
         }
 
-        public void AddTask(Task task)
+        public void AddTask(netflix_prContext context, Task task)
         {
-            _context.Task.Add(task);
+            context.Task.Add(task);
         }
 
-        public Task<Task> CreateTaskEntity(NotificationTask task, Notification notification)
+        public Task<Task> CreateTaskEntity(netflix_prContext context, NotificationTask task, Notification notification)
         {
-            return System.Threading.Tasks.Task.FromResult(_taskMappingService.Map(Tuple.Create(task, notification)));
+            return System.Threading.Tasks.Task.FromResult(_taskMappingService.Map(context, Tuple.Create(task, notification)));
         }
 
-        public void DeleteTask(Task task)
+        public void DeleteTask(netflix_prContext context, Task task)
         {
-            _context.Remove(task);
+            context.Remove(task);
         }
 
-        public Task<List<Task>> ReadManyAsyncTaskByNotificationId(int id)
+        public Task<List<Task>> ReadManyAsyncTaskByNotificationId(netflix_prContext context, int id)
         {
-            List<Task> tasks = (from p in _context.Task
+            List<Task> tasks = (from p in context.Task
                                           where p.NotificationId == id
                                           select p).ToList();
 
             return System.Threading.Tasks.Task.FromResult(tasks);
         }
 
-        public Task<List<string>> ReadManyAsyncTaskConcatenatedIdByNotificationId(int id)
+        public Task<List<string>> ReadManyAsyncTaskConcatenatedIdByNotificationId(netflix_prContext context, int id)
         {
-            List<String> ExistingTasksId = (from p in _context.Task
+            List<String> ExistingTasksId = (from p in context.Task
                                             where p.NotificationId == id
                                             select p.ConcatenatedId).ToList();
 
             return System.Threading.Tasks.Task.FromResult(ExistingTasksId);
         }
 
-        public Task<Task> ReadOneAsycnTaskByConcatenatedId(string concatenatedId)
+        public Task<Task> ReadOneAsycnTaskByConcatenatedId(netflix_prContext context, string concatenatedId)
         {
-            Task task = (from p in _context.Task
+            Task task = (from p in context.Task
                          where p.ConcatenatedId == concatenatedId
                          select p).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(task);
         }
 
-        public void UpdateTask(Task task)
+        public void UpdateTask(netflix_prContext context, Task task)
         {
-            Task TaskExists = _context.Task.FirstOrDefault(x => x.ConcatenatedId == task.ConcatenatedId);
+            Task TaskExists = context.Task.FirstOrDefault(x => x.ConcatenatedId == task.ConcatenatedId);
 
             TaskExists.Description = task.Description;
             TaskExists.ActualEffort = task.ActualEffort;
@@ -73,12 +71,12 @@ namespace ProjectDashboardAPI.Repositories
             TaskExists.Status = task.Status;
             TaskExists.TaskSAPId = task.TaskSAPId;
 
-            _context.Task.Update(TaskExists);
+            context.Task.Update(TaskExists);
         }
 
-        public Task<bool> VerifyIfTaskAlreadyExists(Task task)
+        public Task<bool> VerifyIfTaskAlreadyExists(netflix_prContext context, Task task)
         {            
-            Task taskExists = _context.Task.FirstOrDefault(x => x.ConcatenatedId == task.ConcatenatedId);
+            Task taskExists = context.Task.FirstOrDefault(x => x.ConcatenatedId == task.ConcatenatedId);
             if (taskExists != null)
             {
                 return System.Threading.Tasks.Task.FromResult(true);
@@ -89,9 +87,9 @@ namespace ProjectDashboardAPI.Repositories
             }            
         }
 
-        public Task<bool> VerifyIfTaskAsBeenModified(Task task)
+        public Task<bool> VerifyIfTaskAsBeenModified(netflix_prContext context, Task task)
         {
-            Task TaskExists = _context.Task.FirstOrDefault(x => x.ConcatenatedId == task.ConcatenatedId);
+            Task TaskExists = context.Task.FirstOrDefault(x => x.ConcatenatedId == task.ConcatenatedId);
 
             if (
                     task.Description == TaskExists.Description &&

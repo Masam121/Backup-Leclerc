@@ -10,10 +10,8 @@ namespace ProjectDashboardAPI.Services
 {   
     public interface IProjectService
     {
-        Task<Project> CreateProject(ProjectSAP projectSAP, Budget budget);
         Task<IEnumerable<ProjectNetflixCard>> GetAllProjectNetflixCard();
-        Task<Project> GetProjectById(string id);
-        Task<ProjectNetflix> CreateProjectNetflix(Project project);
+        Task<ProjectNetflix> GetProjectById(string id);
         Task<IEnumerable<ProjectNetflixContributor>> GetProjectContributors(long id);
         Task<IEnumerable<ProjectNetflixCard>> GetEmployeeAllWorkingProjects(string id);
         Task<IEnumerable<ProjectNetflixCard>> GetAllExceedingBudgetProjects();

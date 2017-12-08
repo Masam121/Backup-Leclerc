@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Services.Mapping
 {
-    public interface ITaskMappingService : IMapper<Tuple<NotificationTask, Notification>, Task>
+    public interface ITaskMappingService : IMapper<netflix_prContext, Tuple<NotificationTask, Notification>, Task>
     {
     }
 }

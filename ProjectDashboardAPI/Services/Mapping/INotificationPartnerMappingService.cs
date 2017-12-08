@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Services.Mapping
 {
-    public interface INotificationPartnerMappingService : IMapper<Tuple<Employe, Role>, PartnerDto> ,IMapper<Tuple<Partner, Notification>, NotificationPartner>
+    public interface INotificationPartnerMappingService : IMapper<netflix_prContext, Tuple<Employe, Role>, PartnerDto> ,IMapper<netflix_prContext, Tuple<Partner, Notification>, NotificationPartner>
     {
     }
 }

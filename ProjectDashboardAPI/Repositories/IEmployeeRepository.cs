@@ -8,13 +8,13 @@ namespace ProjectDashboardAPI.Repositories
 {
     public interface IEmployeeRepository
     {
-        Task<int> ReadAsyncEmployeeId(string id);
-        Task<Employe> ReadOneAsyncById(int id);
-        Task<Employe> ReadOneAsyncBySAPId(string id);
-        Task<bool> VerifyIfEmployeeExistsBySapId(string id);
-        Task<bool> VerifyIfEmployeeAsBeenModified(Employe employeeEntity);
-        Task<Employe> CreateEmployee(EmployeeSAP employeeSAP);
-        void AddEmployee(Employe employeeEntity);
-        void UpdateEmployee(Employe employeeEntity);
+        Task<int> ReadAsyncEmployeeId(netflix_prContext context, string id);
+        Task<Employe> ReadOneAsyncById(netflix_prContext context, int id);
+        Task<Employe> ReadOneAsyncBySAPId(netflix_prContext context, string id);
+        Task<bool> VerifyIfEmployeeExistsBySapId(netflix_prContext context, string id);
+        Task<bool> VerifyIfEmployeeAsBeenModified(netflix_prContext context, Employe employeeEntity);
+        Task<Employe> CreateEmployee(netflix_prContext context, EmployeeSAP employeeSAP);
+        void AddEmployee(netflix_prContext context, Employe employeeEntity);
+        void UpdateEmployee(netflix_prContext context, Employe employeeEntity);
     }
 }

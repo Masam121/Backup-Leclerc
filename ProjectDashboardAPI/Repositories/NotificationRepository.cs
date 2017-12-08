@@ -10,19 +10,14 @@ namespace ProjectDashboardAPI.Repositories
 {
     public class NotificationRepository : INotificationRepository
     {
-        private readonly netflix_prContext _context;
-
         private INotificationMappingService _notificationMappingService;
         private INotificationPartnerRepository _notificationPartnerRepository;
 
         DateTime nullDate = new DateTime(0001, 01, 01, 0, 0, 0);
 
-        public NotificationRepository(netflix_prContext context, 
-                                      INotificationMappingService notificationMappingService, 
+        public NotificationRepository(INotificationMappingService notificationMappingService, 
                                       INotificationPartnerRepository notificationPartnerRepository)
         {
-            _context = context;
-
             _notificationMappingService = notificationMappingService ?? throw new ArgumentNullException(nameof(notificationMappingService));
             _notificationPartnerRepository = notificationPartnerRepository ?? throw new ArgumentNullException(nameof(notificationPartnerRepository));
         }
@@ -34,10 +29,10 @@ namespace ProjectDashboardAPI.Repositories
             return projectSAPIdwithoutUnusedDigit;
         }
 
-        protected bool VerifyIfNotificationHasValideProjectAffiliated(string projectSAPId)
+        protected bool VerifyIfNotificationHasValideProjectAffiliated(netflix_prContext context, string projectSAPId)
         {
             int projectId = (from p
-                             in _context.Project
+                             in context.Project
                              where p.ProjectSapId == projectSAPId
                              select p.Id).FirstOrDefault();
             if (projectId == 0)
@@ -50,11 +45,11 @@ namespace ProjectDashboardAPI.Repositories
             }
         }
 
-        public Task<NotificationDto> CreateNotification(Notification notification)
+        public Task<NotificationDto> CreateNotification(netflix_prContext context, Notification notification)
         {
             NotificationDto notificationDto = new NotificationDto();
 
-            string projectName = (from p in _context.Project
+            string projectName = (from p in context.Project
                                   where p.Id == notification.ProjectId
                                   select p.ProjectName).FirstOrDefault();
             notificationDto.projectName = projectName;
@@ -74,36 +69,36 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(notificationDto);
         }       
 
-        public Task<List<NotificationDto>> ReadManyAsync()
+        public Task<List<NotificationDto>> ReadManyAsync(netflix_prContext context)
         {
-            IEnumerable<Notification> notifications = (from p in _context.Notification
+            IEnumerable<Notification> notifications = (from p in context.Notification
                                                 select p).ToList();
 
             List<NotificationDto> notificationList = new List<NotificationDto>();
             foreach (Notification notification in notifications)
             {
-                NotificationDto notificationDto = CreateNotification(notification).Result;
-                notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(notification).Result.ToList();
+                NotificationDto notificationDto = CreateNotification(context ,notification).Result;
+                notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(context, notification).Result.ToList();
                 notificationList.Add(notificationDto);
             }
 
             return System.Threading.Tasks.Task.FromResult(notificationList);
         }
 
-        public Task<List<NotificationDto>> ReadManyAsyncNotificationFromPartners(List<NotificationPartner> partners)
+        public Task<List<NotificationDto>> ReadManyAsyncNotificationFromPartners(netflix_prContext context, List<NotificationPartner> partners)
         {
             List<string> partnerIdAlreadyAdded = new List<string>();
             List<NotificationDto> notifications = new List<NotificationDto>();
 
             foreach (var partner in partners)
             {
-                Notification notification = (from p in _context.Notification
+                Notification notification = (from p in context.Notification
                                              where p.Id == partner.NotificationId
                                              select p).FirstOrDefault();
 
                 if (!partnerIdAlreadyAdded.Contains(notification.NotificationSapId))
                 {
-                    notifications.Add(CreateNotification(notification).Result);
+                    notifications.Add(CreateNotification(context, notification).Result);
                     partnerIdAlreadyAdded.Add(notification.NotificationSapId);
                 }
             }
@@ -111,77 +106,77 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(notifications);
         }
 
-        public Task<List<NotificationDto>> ReadManyAsyncDepartmentalNotification(string departmentId)
+        public Task<List<NotificationDto>> ReadManyAsyncDepartmentalNotification(netflix_prContext context, string departmentId)
         {
-            IEnumerable<Notification> notifications = (from p in _context.Notification
+            IEnumerable<Notification> notifications = (from p in context.Notification
                                                 where p.Department == departmentId
                                                 select p).ToList();
 
             List<NotificationDto> notificationList = new List<NotificationDto>();
             foreach (Notification notification in notifications)
             {
-                NotificationDto notificationDto = CreateNotification(notification).Result;
-                notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(notification).Result.ToList();
+                NotificationDto notificationDto = CreateNotification(context, notification).Result;
+                notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(context, notification).Result.ToList();
                 notificationList.Add(notificationDto);
             }
 
             return System.Threading.Tasks.Task.FromResult(notificationList);
         }
 
-        public Task<NotificationDto> ReadOneAsyncNotificationDtoById(int id)
+        public Task<NotificationDto> ReadOneAsyncNotificationDtoById(netflix_prContext context, int id)
         {
-            Notification notification = (from p in _context.Notification
+            Notification notification = (from p in context.Notification
                                          where p.Id == id
                                          select p).FirstOrDefault();
 
-            NotificationDto notificationDto = CreateNotification(notification).Result;
-            notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(notification).Result.ToList();
+            NotificationDto notificationDto = CreateNotification(context, notification).Result;
+            notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(context, notification).Result.ToList();
 
             return System.Threading.Tasks.Task.FromResult(notificationDto);
         }
 
-        public Task<List<NotificationDto>> ReadManyAsyncProjectNotification(int projectId)
+        public Task<List<NotificationDto>> ReadManyAsyncProjectNotification(netflix_prContext context, int projectId)
         {
-            List<Notification> notifications = (from p in _context.Notification
+            List<Notification> notifications = (from p in context.Notification
                                                 where p.ProjectId == projectId
                                                 select p).ToList();
 
             List<NotificationDto> notificationList = new List<NotificationDto>();
             foreach (Notification notification in notifications)
             {
-                NotificationDto notificationDto = CreateNotification(notification).Result;
-                notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(notification).Result.ToList();
+                NotificationDto notificationDto = CreateNotification(context, notification).Result;
+                notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(context, notification).Result.ToList();
                 notificationList.Add(notificationDto);
             }
 
             return System.Threading.Tasks.Task.FromResult(notificationList);
         }
 
-        public Task<List<string>> ReadManyAsyncNotificationSAPId()
+        public Task<List<string>> ReadManyAsyncNotificationSAPId(netflix_prContext context)
         {
-            List<String> NotificationsSAPId = (from p in _context.Notification select p.NotificationSapId).ToList();
+            List<String> NotificationsSAPId = (from p in context.Notification select p.NotificationSapId).ToList();
 
             return System.Threading.Tasks.Task.FromResult(NotificationsSAPId);
         }
 
-        public void SaveData()
+        public void SaveData(netflix_prContext context)
         {
-            _context.SaveChanges();
+            context.SaveChanges();
         }
 
-        public void AddNotification(Notification notification)
+        public void AddNotification(netflix_prContext context, Notification notification)
         {
-            _context.Notification.Add(notification);
+            context.Notification.Add(notification);
         }
 
-        public void DeleteNotification(Notification notification)
+        public void DeleteNotification(netflix_prContext context, Notification notification)
         {
             throw new NotImplementedException();
         }
 
-        public void UpdateNotification(Notification notification)
+        public void UpdateNotification(netflix_prContext context, Notification notification)
         {
-            Notification existingNotificationInDatabase = _context.Notification.FirstOrDefault(x => x.NotificationSapId == notification.NotificationSapId);
+            Notification existingNotificationInDatabase = context.Notification.FirstOrDefault(x => x.NotificationSapId == notification.NotificationSapId);
 
             existingNotificationInDatabase.ProjectId = notification.ProjectId;
             existingNotificationInDatabase.NotificationSapId = notification.NotificationSapId;
@@ -195,16 +190,16 @@ namespace ProjectDashboardAPI.Repositories
             existingNotificationInDatabase.EstEffort = notification.EstEffort;
             existingNotificationInDatabase.ActualEffort = notification.ActualEffort;
 
-            _context.Notification.Update(existingNotificationInDatabase);
+            context.Notification.Update(existingNotificationInDatabase);
         }
 
-        public Task<Notification> CreateNotificationEntity(NotificationSAP notificationSAP)
+        public Task<Notification> CreateNotificationEntity(netflix_prContext context, NotificationSAP notificationSAP)
         {
             string projectSAPId = RemoveUnusedDigitFromSAPProjectId(notificationSAP.ProjectId);
-            if (VerifyIfNotificationHasValideProjectAffiliated(projectSAPId))
+            if (VerifyIfNotificationHasValideProjectAffiliated(context ,projectSAPId))
             {
-                var notification = _notificationMappingService.Map(notificationSAP);
-                notification.ProjectId = (from p in _context.Project
+                var notification = _notificationMappingService.Map(context, notificationSAP);
+                notification.ProjectId = (from p in context.Project
                                           where p.ProjectSapId == projectSAPId
                                           select p.Id).FirstOrDefault();
 
@@ -216,9 +211,9 @@ namespace ProjectDashboardAPI.Repositories
             }                     
         }
 
-        public Task<bool> VerifiyIfNotificationExists(Notification notification)
+        public Task<bool> VerifiyIfNotificationExists(netflix_prContext context, Notification notification)
         {
-            Notification NotificationExists = _context.Notification.FirstOrDefault(x => x.NotificationSapId == notification.NotificationSapId);
+            Notification NotificationExists = context.Notification.FirstOrDefault(x => x.NotificationSapId == notification.NotificationSapId);
             if (NotificationExists != null)
             {
                 return System.Threading.Tasks.Task.FromResult(true);
@@ -229,9 +224,9 @@ namespace ProjectDashboardAPI.Repositories
             }
         }
 
-        public Task<bool> VerifiyIfNotificationAsBeenUpdated(Notification notification)
+        public Task<bool> VerifiyIfNotificationAsBeenUpdated(netflix_prContext context, Notification notification)
         {
-            Notification existingNotificationInDatabase = _context.Notification.FirstOrDefault(x => x.NotificationSapId == notification.NotificationSapId);
+            Notification existingNotificationInDatabase = context.Notification.FirstOrDefault(x => x.NotificationSapId == notification.NotificationSapId);
 
             if (
                     notification.ProjectId == existingNotificationInDatabase.ProjectId &&
@@ -254,25 +249,25 @@ namespace ProjectDashboardAPI.Repositories
             }
         }
 
-        public Task<int> ReadOneAsyncNotificationIdByNotificationSAPId(string id)
+        public Task<int> ReadOneAsyncNotificationIdByNotificationSAPId(netflix_prContext context, string id)
         {
-            int n = (from p in _context.Notification
+            int n = (from p in context.Notification
                       where p.NotificationSapId == id
                       select p.Id).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(n);
         }
 
-        public Task<Notification> ReadOneAsyncNotificationByNotificationSAPId(string id)
+        public Task<Notification> ReadOneAsyncNotificationByNotificationSAPId(netflix_prContext context, string id)
         {
-            Notification notification = (from p in _context.Notification where p.NotificationSapId == id select p).FirstOrDefault();
+            Notification notification = (from p in context.Notification where p.NotificationSapId == id select p).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(notification);
         }
 
-        public Task<Notification> ReadOneAsyncNotificationById(int id)
+        public Task<Notification> ReadOneAsyncNotificationById(netflix_prContext context, int id)
         {
-            Notification notification = (from p in _context.Notification
+            Notification notification = (from p in context.Notification
                                          where p.Id == id
                                          select p).FirstOrDefault();
 

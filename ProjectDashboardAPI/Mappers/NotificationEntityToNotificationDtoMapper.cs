@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Mappers
 {
-    public class NotificationEntityToNotificationDtoMapper : IMapper<Notification, NotificationDto>
+    public class NotificationEntityToNotificationDtoMapper : IMapper<netflix_prContext, Notification, NotificationDto>
     {
         private IEmployeeRepository _emplopyeeRepository;
         private IProjectRepository _projectRepository;
@@ -25,11 +25,11 @@ namespace ProjectDashboardAPI.Mappers
             _notificationPartnerRepository = notificationPartnerRepository ?? throw new ArgumentNullException(nameof(notificationPartnerRepository));
         }
 
-        public NotificationDto Map(Notification entity)
+        public NotificationDto Map(netflix_prContext context, Notification entity)
         {
             NotificationDto notificationDto = new NotificationDto();
 
-            notificationDto.projectName = _projectRepository.ReadOneAsyncById(entity.ProjectId).Result.ProjectName;
+            notificationDto.projectName = _projectRepository.ReadOneAsyncById(context ,entity.ProjectId).Result.ProjectName;
             notificationDto.Id = entity.NotificationSapId;
             notificationDto.description = entity.Description;
             notificationDto.creationDate = entity.CreationDate.ToString("yyyy-MM-dd");
@@ -42,7 +42,7 @@ namespace ProjectDashboardAPI.Mappers
                 notificationDto.endDate = entity.EstEndDate.ToString("yyyy-MM-dd");
             }
             notificationDto.status = entity.Status;
-            notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(entity).Result.ToList();
+            notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(context, entity).Result.ToList();
             notificationDto.actualEffort = entity.ActualEffort.ToString();
             notificationDto.estimatedEffort = entity.EstEffort.ToString();
 

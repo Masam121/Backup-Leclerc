@@ -11,89 +11,87 @@ namespace ProjectDashboardAPI.Repositories
 {
     public class ProjectRepository : IProjectRepository
     {
-        private readonly netflix_prContext _context;
         private readonly IProjectMappingService _projectMappingService;
         private readonly IProjectCardMappingService _projectCardMappingService;
 
-        public ProjectRepository(netflix_prContext context, IProjectMappingService projectMappingService, IProjectCardMappingService projectCardMappingService)
+        public ProjectRepository(IProjectMappingService projectMappingService, IProjectCardMappingService projectCardMappingService)
         {
-            _context = context;
             _projectMappingService = projectMappingService ?? throw new ArgumentNullException(nameof(projectMappingService));
             _projectCardMappingService = projectCardMappingService ?? throw new ArgumentNullException(nameof(projectCardMappingService));
         }
 
-        public Task<Project> CreateProject(ProjectSAP projectSAP, Budget budget)
+        public Task<Project> CreateProject(netflix_prContext context, ProjectSAP projectSAP, Budget budget)
         {
-            var project = _projectMappingService.Map(projectSAP);
+            var project = _projectMappingService.Map(context, projectSAP);
             project.Budget = budget;
 
             return System.Threading.Tasks.Task.FromResult(project);            
         }
 
-        public Task<IEnumerable<Project>> ReadManyAsync()
+        public Task<IEnumerable<Project>> ReadManyAsync(netflix_prContext context)
         {
-            IEnumerable<Project> projects = (from p in _context.Project select p).ToList();
+            IEnumerable<Project> projects = (from p in context.Project select p).ToList();
             return System.Threading.Tasks.Task.FromResult(projects);
         }
 
-        public Task<ProjectNetflixCard> CreateProjectNetflixCard(Project project)
+        public Task<ProjectNetflixCard> CreateProjectNetflixCard(netflix_prContext context, Project project)
         {
-            ProjectNetflixCard project_netxlix_card = _projectCardMappingService.Map(project);
+            ProjectNetflixCard project_netxlix_card = _projectCardMappingService.Map(context, project);
 
             return System.Threading.Tasks.Task.FromResult(project_netxlix_card);
         }
 
-        public Task<Project> ReadOneAsyncBySAPId(string id)
+        public Task<Project> ReadOneAsyncBySAPId(netflix_prContext context, string id)
         {
-            var project = _context.Project.FirstOrDefault(t => t.ProjectSapId == id);
+            var project = context.Project.FirstOrDefault(t => t.ProjectSapId == id);
             return System.Threading.Tasks.Task.FromResult(project);
         }
 
-        public Task<Project> ReadOneAsyncById(long id)
+        public Task<Project> ReadOneAsyncById(netflix_prContext context, long id)
         {
-            var project = _context.Project.FirstOrDefault(t => t.Id == id);
+            var project = context.Project.FirstOrDefault(t => t.Id == id);
             return System.Threading.Tasks.Task.FromResult(project);
         }
 
-        public Task<ProjectNetflix> CreateProjectNetflix(Project project)
+        public Task<ProjectNetflix> CreateProjectNetflix(netflix_prContext context, Project project)
         {        
-            ProjectNetflix project_netxlix = _projectMappingService.Map(project);
+            ProjectNetflix project_netxlix = _projectMappingService.Map(context, project);
 
             return System.Threading.Tasks.Task.FromResult(project_netxlix);
         }
 
-        public Task<IEnumerable<Notification>> ReadManyAsyncNotificationByProjectId(long id)
+        public Task<IEnumerable<Notification>> ReadManyAsyncNotificationByProjectId(netflix_prContext context, long id)
         {
-            int? projectId = (from p in _context.Project
+            int? projectId = (from p in context.Project
                               where p.ProjectSapId == id.ToString()
                               select p.Id).FirstOrDefault();
 
-            IEnumerable<Notification> projectNotificaitions = (from p in _context.Notification
+            IEnumerable<Notification> projectNotificaitions = (from p in context.Notification
                                                         where p.ProjectId == projectId
                                                         select p).ToList();
 
             return System.Threading.Tasks.Task.FromResult(projectNotificaitions);
         }
 
-        public Task<IEnumerable<Project>> ReadManyAsyncByFacilityId(string id)
+        public Task<IEnumerable<Project>> ReadManyAsyncByFacilityId(netflix_prContext context, string id)
         {
-            IEnumerable<Project> facilityProjects = (from p in _context.Project
+            IEnumerable<Project> facilityProjects = (from p in context.Project
                                               where p.Factory.Substring(0, 4) == id
                                               select p).ToList();
             return System.Threading.Tasks.Task.FromResult(facilityProjects);
         }
 
-        public Task<List<string>> ReadManyAsyncProjectSAPId()
+        public Task<List<string>> ReadManyAsyncProjectSAPId(netflix_prContext context)
         {
-            List<string> ProjectsSAPIds = (from p in _context.Project
+            List<string> ProjectsSAPIds = (from p in context.Project
                                            select p.ProjectSapId).ToList();
 
             return System.Threading.Tasks.Task.FromResult(ProjectsSAPIds);
         }
 
-        public Task<bool> VerifiyIfProjectExists(Project project)
+        public Task<bool> VerifiyIfProjectExists(netflix_prContext context, Project project)
         {
-            Project ProjectExists = _context.Project.FirstOrDefault(x => x.ProjectSapId == project.ProjectSapId);
+            Project ProjectExists = context.Project.FirstOrDefault(x => x.ProjectSapId == project.ProjectSapId);
             if(ProjectExists == null)
             {
                 return System.Threading.Tasks.Task.FromResult(false);
@@ -104,9 +102,9 @@ namespace ProjectDashboardAPI.Repositories
             }
         }
 
-        public Task<bool> VerifiyIfProjectAsBeenUpdated(Project project)
+        public Task<bool> VerifiyIfProjectAsBeenUpdated(netflix_prContext context, Project project)
         {
-            Project ProjectExists = _context.Project.FirstOrDefault(x => x.ProjectSapId == project.ProjectSapId);
+            Project ProjectExists = context.Project.FirstOrDefault(x => x.ProjectSapId == project.ProjectSapId);
 
             if (
                     project.ProjectOwnerId == ProjectExists.ProjectOwnerId &&
@@ -131,9 +129,9 @@ namespace ProjectDashboardAPI.Repositories
             }
         }
 
-        public void UpdateProject(Project project)
+        public void UpdateProject(netflix_prContext context, Project project)
         {
-            Project ProjectExists = _context.Project.FirstOrDefault(x => x.ProjectSapId == project.ProjectSapId);
+            Project ProjectExists = context.Project.FirstOrDefault(x => x.ProjectSapId == project.ProjectSapId);
 
             ProjectExists.ProjectOwnerId = project.ProjectOwnerId;
             ProjectExists.ProjectManagerId = project.ProjectManagerId;
@@ -148,22 +146,22 @@ namespace ProjectDashboardAPI.Repositories
             ProjectExists.Priority = project.Priority;
             ProjectExists.Description = project.Description;
 
-            _context.Project.Update(ProjectExists);
+            context.Project.Update(ProjectExists);
         }
 
-        public void AddProject(Project project)
+        public void AddProject(netflix_prContext context, Project project)
         {
-            _context.Project.Add(project);
+            context.Project.Add(project);
         }
 
-        public void DeleteProject(Project project)
+        public void DeleteProject(netflix_prContext context, Project project)
         {
-            _context.Project.Remove(project);           
+            context.Project.Remove(project);           
         }
 
-        public void SaveData()
+        public void SaveData(netflix_prContext context)
         {
-            _context.SaveChanges();
+            context.SaveChanges();
         }
     }
 }

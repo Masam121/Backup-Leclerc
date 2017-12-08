@@ -29,7 +29,7 @@ namespace ProjectDashboardAPI.Controllers
         }
 
         // GET: api/Document/5
-        [HttpGet("project/{id}", Name = "GetDocumentsByProjectId")]
+        [HttpGet("{id}", Name = "GetDocumentsByProjectId")]
         public async Task<IActionResult> GetDocument([FromRoute] string id)
         {
             if (!ModelState.IsValid)
@@ -84,20 +84,20 @@ namespace ProjectDashboardAPI.Controllers
         }
 
         // POST: api/Document
-        [HttpPost("project/{id}", Name ="CreateDocumentByProjectId")]
-        public async Task<IActionResult> PostDocument([FromBody] DocumentDto document, [FromRoute] string id)
+        [HttpPost]
+        public async Task<IActionResult> PostDocument([FromBody] Document document)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             int projectId = (from p in _context.Project
-                             where p.ProjectSapId == id
+                             where p.ProjectSapId == document.ProjectId.ToString()
                              select p.Id).FirstOrDefault();
 
             if(projectId == 0)
             {
-                return BadRequest(id);
+                return BadRequest(document.ProjectId);
             }
             if(document == null)
             {

@@ -10,24 +10,24 @@ namespace ProjectDashboardAPI.Services
 {
     public class NotificationMappingService : INotificationMappingService
     {
-        private readonly IMapper<Notification, NotificationDto> _NotificationEntityToNotificationDtoMapper;
-        private readonly IMapper<NotificationSAP, Notification> _NotificationSAPToNotificationEntityMapper;
+        private readonly IMapper<netflix_prContext, Notification, NotificationDto> _NotificationEntityToNotificationDtoMapper;
+        private readonly IMapper<netflix_prContext, NotificationSAP, Notification> _NotificationSAPToNotificationEntityMapper;
 
-        public NotificationMappingService(IMapper<Notification, NotificationDto> notificationEntityToNotificationDtoMapper,
-                                          IMapper<NotificationSAP, Notification> notificationSAPToNotificationEntityMapper)
+        public NotificationMappingService(IMapper<netflix_prContext , Notification, NotificationDto> notificationEntityToNotificationDtoMapper,
+                                          IMapper<netflix_prContext, NotificationSAP, Notification> notificationSAPToNotificationEntityMapper)
         {
             _NotificationEntityToNotificationDtoMapper = notificationEntityToNotificationDtoMapper ?? throw new ArgumentNullException(nameof(notificationEntityToNotificationDtoMapper));
             _NotificationSAPToNotificationEntityMapper = notificationSAPToNotificationEntityMapper ?? throw new ArgumentNullException(nameof(notificationSAPToNotificationEntityMapper));
         }
 
-        public NotificationDto Map(Notification entity)
+        public NotificationDto Map(netflix_prContext context, Notification entity)
         {
-            return _NotificationEntityToNotificationDtoMapper.Map(entity);
+            return _NotificationEntityToNotificationDtoMapper.Map(context, entity);
         }
 
-        public Notification Map(NotificationSAP entity)
+        public Notification Map(netflix_prContext context, NotificationSAP entity)
         {
-            return _NotificationSAPToNotificationEntityMapper.Map(entity);
+            return _NotificationSAPToNotificationEntityMapper.Map(context, entity);
         }
     }
 }

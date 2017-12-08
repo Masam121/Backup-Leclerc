@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Services.Mapping
 {
-    public interface IProjectCardMappingService : IMapper<Project, ProjectNetflixCard>
+    public interface IProjectCardMappingService : IMapper<netflix_prContext, Project, ProjectNetflixCard>
     {
     }
 }

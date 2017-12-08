@@ -7,6 +7,6 @@ namespace ProjectDashboardAPI.Repositories
 {
     public interface IRoleRepository
     {
-        Task<int> ReadOneRoleIdByRoleSigle(string sigle);
+        Task<int> ReadOneRoleIdByRoleSigle(netflix_prContext context, string sigle);
     }
 }

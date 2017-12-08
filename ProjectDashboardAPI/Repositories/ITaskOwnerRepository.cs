@@ -7,9 +7,9 @@ namespace ProjectDashboardAPI.Repositories
 {
     public interface ITaskOwnerRepository
     {
-        Task<TaskOwner> CreateTaskOwner(string employeeId, Task task);
-        Task<TaskOwner> ReadOneAsyncTaskOwnerByTaskId(int taskId);
-        void AddTaskOwner(TaskOwner taskOwner);
-        void DeleteTaskOwner(TaskOwner taskOwner);
+        Task<TaskOwner> CreateTaskOwner(netflix_prContext context, string employeeId, Task task);
+        Task<TaskOwner> ReadOneAsyncTaskOwnerByTaskId(netflix_prContext context, int taskId);
+        void AddTaskOwner(netflix_prContext context, TaskOwner taskOwner);
+        void DeleteTaskOwner(netflix_prContext context, TaskOwner taskOwner);
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Mappers
 {
-    public class NotificationSAPToNotificationEntityMapper : IMapper<NotificationSAP, Notification>
+    public class NotificationSAPToNotificationEntityMapper : IMapper<netflix_prContext, NotificationSAP, Notification>
     {
         public string TrimZerosFromSAPId(string id)
         {
@@ -53,7 +53,7 @@ namespace ProjectDashboardAPI.Mappers
             }
         }
 
-        public Notification Map(NotificationSAP entity)
+        public Notification Map(netflix_prContext context, NotificationSAP entity)
         {
             Notification notificationEntity = new Notification();
             

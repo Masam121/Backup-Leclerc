@@ -45,14 +45,14 @@ namespace NetflixAPI
             services.AddSingleton<ITaskService, TaskService>();
             services.AddSingleton<IEmployeeService, EmployeeService>();
 
-            services.AddSingleton<IMapper<Notification, NotificationDto>, NotificationEntityToNotificationDtoMapper>();
-            services.AddSingleton<IMapper<Tuple<Employe, Role>, PartnerDto>, NotificationPartnerToPartnerDtoMapper>();
-            services.AddSingleton<IMapper<Project, ProjectNetflixCard>, ProjectEntityToProjectNetflixCardMapper>();
-            services.AddSingleton<IMapper<Project, ProjectNetflix>, ProjectEntityToProjectNetflixMapper>();
-            services.AddSingleton<IMapper<ProjectSAP, Project>, ProjectSAPToProjectEntityMapper>();
-            services.AddSingleton<IMapper<Tuple<NotificationTask, Notification>, Task>, TaskSAPToTaskEntityMapper>();
-            services.AddSingleton<IMapper<Tuple<Partner, Notification>, NotificationPartner>, NotificationPartnerSAPToNotificationPartnerEntityMapper>();
-            services.AddSingleton<IMapper<NotificationSAP, Notification>, NotificationSAPToNotificationEntityMapper>();
+            services.AddSingleton<IMapper<netflix_prContext, Notification, NotificationDto>, NotificationEntityToNotificationDtoMapper>();
+            services.AddSingleton<IMapper<netflix_prContext, Tuple<Employe, Role>, PartnerDto>, NotificationPartnerToPartnerDtoMapper>();
+            services.AddSingleton<IMapper<netflix_prContext, Project, ProjectNetflixCard>, ProjectEntityToProjectNetflixCardMapper>();
+            services.AddSingleton<IMapper<netflix_prContext, Project, ProjectNetflix>, ProjectEntityToProjectNetflixMapper>();
+            services.AddSingleton<IMapper<netflix_prContext, ProjectSAP, Project>, ProjectSAPToProjectEntityMapper>();
+            services.AddSingleton<IMapper<netflix_prContext, Tuple<NotificationTask, Notification>, Task>, TaskSAPToTaskEntityMapper>();
+            services.AddSingleton<IMapper<netflix_prContext, Tuple<Partner, Notification>, NotificationPartner>, NotificationPartnerSAPToNotificationPartnerEntityMapper>();
+            services.AddSingleton<IMapper<netflix_prContext, NotificationSAP, Notification>, NotificationSAPToNotificationEntityMapper>();
 
             services.AddSingleton<IProjectMappingService, ProjectMappingService>();
             services.AddSingleton<INotificationMappingService, NotificationMappingService>();

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Mappers
 {
-    public class ProjectEntityToProjectNetflixCardMapper : IMapper<Project, ProjectNetflixCard>
+    public class ProjectEntityToProjectNetflixCardMapper : IMapper<netflix_prContext, Project, ProjectNetflixCard>
     {
         private IEmployeeRepository _emplopyeeRepository;
 
@@ -16,12 +16,12 @@ namespace ProjectDashboardAPI.Mappers
             _emplopyeeRepository = emplopyeeRepository ?? throw new ArgumentNullException(nameof(emplopyeeRepository));
         }
 
-        public ProjectNetflixCard Map(Project entity)
+        public ProjectNetflixCard Map(netflix_prContext context, Project entity)
         {
             ProjectNetflixCard project_netxlix_card = new ProjectNetflixCard();
 
             int managerId = entity.ProjectManagerId ?? default(int);
-            var manager = _emplopyeeRepository.ReadOneAsyncById(managerId).Result;
+            var manager = _emplopyeeRepository.ReadOneAsyncById(context, managerId).Result;
 
             if (manager == null)
             {

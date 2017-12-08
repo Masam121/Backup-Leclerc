@@ -23,54 +23,82 @@ namespace ProjectDashboardAPI.Services
        
         public async Task<EmployeeNetflixDetail> GetEmployeeById(string id)
         {
-            Employe employeeEntity = await _employeeRepository.ReadOneAsyncBySAPId(id);
-
-            EmployeeNetflixDetail employee_detail_netflix = new EmployeeNetflixDetail()
+            using (var context = new netflix_prContext())
             {
-                Id = employeeEntity.Id,
-                Department = employeeEntity.Department,
-                Factory = employeeEntity.Factory,
-                HiredDate = employeeEntity.HiredDate.ToString("MMMM, yyyy"),
-                LeclercEmail = employeeEntity.LeclercEmail,
-                Name = employeeEntity.Name,
-                Picture = employeeEntity.Picture,
-                O365Id = employeeEntity.O365Id,
-                ProjectWorkRatio = employeeEntity.ProjectWorkRatio,
-                SuperiorId = employeeEntity.SuperiorId,
-                Title = employeeEntity.Title,
-                Workload = employeeEntity.Workload,
-                IdSAP = employeeEntity.IdSAP
-            };
-            return employee_detail_netflix;       
+                Employe employeeEntity = await _employeeRepository.ReadOneAsyncBySAPId(context, id);
+
+                EmployeeNetflixDetail employee_detail_netflix = new EmployeeNetflixDetail()
+                {
+                    Id = employeeEntity.Id,
+                    Department = employeeEntity.Department,
+                    Factory = employeeEntity.Factory,
+                    HiredDate = employeeEntity.HiredDate.ToString("MMMM, yyyy"),
+                    LeclercEmail = employeeEntity.LeclercEmail,
+                    Name = employeeEntity.Name,
+                    Picture = employeeEntity.Picture,
+                    O365Id = employeeEntity.O365Id,
+                    ProjectWorkRatio = employeeEntity.ProjectWorkRatio,
+                    SuperiorId = employeeEntity.SuperiorId,
+                    Title = employeeEntity.Title,
+                    Workload = employeeEntity.Workload,
+                    IdSAP = employeeEntity.IdSAP
+                };
+                return employee_detail_netflix;
+            }               
+        }
+
+        public async Task<IActionResult> PostEmployeeRatio(long id, string ratio)
+        {
+            using (var context = new netflix_prContext())
+            {
+                var employee = context.Employe.FirstOrDefault(t => t.IdSAP == id.ToString());
+                employee.ProjectWorkRatio = Int32.Parse(ratio);
+                context.Employe.Update(employee);
+                context.SaveChanges();
+                return new ObjectResult(employee.ProjectWorkRatio);
+            }           
+        }
+
+        public async Task<string> GetEmployeeRatio(long id)
+        {
+            using (var context = new netflix_prContext())
+            {
+                var employee = context.Employe.FirstOrDefault(t => t.IdSAP == id.ToString());
+                
+                return employee.ProjectWorkRatio.ToString();
+            }
         }
 
         public async Task<IActionResult> RefreshEmployee()
         {
-            try
+            using (var context = new netflix_prContext())
             {
-                IEnumerable<EmployeeSAP> employees = await _sapService.GetSapEmployee();
-                foreach (EmployeeSAP employeeSAP in employees)
+                try
                 {
-                    if(await _employeeRepository.VerifyIfEmployeeExistsBySapId(employeeSAP.id_SAP))
+                    IEnumerable<EmployeeSAP> employees = await _sapService.GetSapEmployee();
+                    foreach (EmployeeSAP employeeSAP in employees)
                     {
-                        var employeeEntity = await _employeeRepository.CreateEmployee(employeeSAP);
-                        if (await _employeeRepository.VerifyIfEmployeeAsBeenModified(employeeEntity))
+                        if (await _employeeRepository.VerifyIfEmployeeExistsBySapId(context, employeeSAP.id_SAP))
                         {
-                            _employeeRepository.UpdateEmployee(employeeEntity);
+                            var employeeEntity = await _employeeRepository.CreateEmployee(context, employeeSAP);
+                            if (await _employeeRepository.VerifyIfEmployeeAsBeenModified(context, employeeEntity))
+                            {
+                                _employeeRepository.UpdateEmployee(context, employeeEntity);
+                            }
+                        }
+                        else
+                        {
+                            var employeeEntity = await _employeeRepository.CreateEmployee(context, employeeSAP);
+                            _employeeRepository.AddEmployee(context, employeeEntity);
                         }
                     }
-                    else
-                    {
-                        var employeeEntity = await _employeeRepository.CreateEmployee(employeeSAP);
-                        _employeeRepository.AddEmployee(employeeEntity);
-                    }
+                    return new ObjectResult("Successfully refreshed...");
                 }
-                return new ObjectResult("Successfully refreshed...");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+            }                
         }
     }
 }

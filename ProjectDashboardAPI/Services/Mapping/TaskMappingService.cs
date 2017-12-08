@@ -9,18 +9,18 @@ namespace ProjectDashboardAPI.Services.Mapping
 {
     public class TaskMappingService : ITaskMappingService
     {
-        private readonly IMapper<Tuple<NotificationTask, Notification>, Task> _TaskSAPToTaskEntityMapper;
+        private readonly IMapper<netflix_prContext, Tuple<NotificationTask, Notification>, Task> _TaskSAPToTaskEntityMapper;
 
         public TaskMappingService(
-            IMapper<Tuple<NotificationTask, Notification>, Task> taskSAPToTaskEntityMapper
+            IMapper<netflix_prContext, Tuple<NotificationTask, Notification>, Task> taskSAPToTaskEntityMapper
         )
         {
             _TaskSAPToTaskEntityMapper = taskSAPToTaskEntityMapper ?? throw new ArgumentNullException(nameof(taskSAPToTaskEntityMapper));
         }
 
-        public Task Map(Tuple<NotificationTask, Notification> entity)
+        public Task Map(netflix_prContext context, Tuple<NotificationTask, Notification> entity)
         {
-            return _TaskSAPToTaskEntityMapper.Map(entity);
+            return _TaskSAPToTaskEntityMapper.Map(context, entity);
         }
     }
 }

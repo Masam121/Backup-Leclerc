@@ -84,47 +84,47 @@ namespace ProjectDashboardAPI.Services
             return dico;
         }
 
-        public void deleteUnexistingNotificationInSAP(List<String> notificationsId)
+        public void deleteUnexistingNotificationInSAP(netflix_prContext context, List<String> notificationsId)
         {
             if (notificationsId.Any())
             {
                 foreach (String NotificationSAPId in notificationsId)
                 {
-                    Notification NotificationToBeDeleted = _notificationRepository.ReadOneAsyncNotificationByNotificationSAPId(NotificationSAPId).Result;
+                    Notification NotificationToBeDeleted = _notificationRepository.ReadOneAsyncNotificationByNotificationSAPId(context, NotificationSAPId).Result;
 
                     if (NotificationToBeDeleted != null)
                     {
-                        _notificationRepository.DeleteNotification(NotificationToBeDeleted);
+                        _notificationRepository.DeleteNotification(context, NotificationToBeDeleted);
 
-                        List<Task> taskTobeDeleted = _taskRepository.ReadManyAsyncTaskByNotificationId(NotificationToBeDeleted.Id).Result;
+                        List<Task> taskTobeDeleted = _taskRepository.ReadManyAsyncTaskByNotificationId(context, NotificationToBeDeleted.Id).Result;
                         
                         foreach (Task task in taskTobeDeleted)
                         {
-                            _taskRepository.DeleteTask(task);
+                            _taskRepository.DeleteTask(context, task);
 
-                            TaskOwner taskOwnerToBeDeleted = _taskOwnerRepository.ReadOneAsyncTaskOwnerByTaskId(task.Id).Result;
-                            _taskOwnerRepository.DeleteTaskOwner(taskOwnerToBeDeleted);
+                            TaskOwner taskOwnerToBeDeleted = _taskOwnerRepository.ReadOneAsyncTaskOwnerByTaskId(context, task.Id).Result;
+                            _taskOwnerRepository.DeleteTaskOwner(context, taskOwnerToBeDeleted);
                         }
 
-                        List<NotificationPartner> partnerTobeDeleted = _notificationPartnerRepository.ReadManyPartnersByNotification(NotificationToBeDeleted).Result;
+                        List<NotificationPartner> partnerTobeDeleted = _notificationPartnerRepository.ReadManyPartnersByNotification(context, NotificationToBeDeleted).Result;
 
                         foreach (NotificationPartner partner in partnerTobeDeleted)
                         {
-                            _notificationPartnerRepository.DeletePartner(partner);
+                            _notificationPartnerRepository.DeletePartner(context, partner);
                         }
                     }                    
                 }
             }
         }
 
-        public void AddPartners(List<Partner> partners, Notification notification)
+        public void AddPartners(netflix_prContext context, List<Partner> partners, Notification notification)
         {
             foreach (Partner partner in partners)
             {
                 try
                 {
-                    NotificationPartner partnerEntity = _notificationPartnerRepository.CreateNotificationPartnerEntity(partner, notification).Result;
-                    _notificationPartnerRepository.AddPartner(partnerEntity);
+                    NotificationPartner partnerEntity = _notificationPartnerRepository.CreateNotificationPartnerEntity(context, partner, notification).Result;
+                    _notificationPartnerRepository.AddPartner(context, partnerEntity);
                    
                 }
                 catch (Exception ex)
@@ -137,152 +137,168 @@ namespace ProjectDashboardAPI.Services
 
         public async Task<List<NotificationDto>> GetAllNotifications()
         {
-            IEnumerable<NotificationDto> notifications = await _notificationRepository.ReadManyAsync();
+            using (var context = new netflix_prContext())
+            {
+                IEnumerable<NotificationDto> notifications = await _notificationRepository.ReadManyAsync(context);
 
-            return notifications.ToList();
+                return notifications.ToList();
+            }               
         }
 
         public async Task<List<NotificationDto>> GetDepartementalNotifications(string departmentId)
         {
-            string id = departmentId.Substring(0, 3);
-            IEnumerable<NotificationDto> notifications = await _notificationRepository.ReadManyAsyncDepartmentalNotification(id);
-            
-            return notifications.ToList();
+            using (var context = new netflix_prContext())
+            {
+                string id = departmentId.Substring(0, 3);
+                IEnumerable<NotificationDto> notifications = await _notificationRepository.ReadManyAsyncDepartmentalNotification(context, id);
+
+                return notifications.ToList();
+            }                
         }
 
         public async Task<List<NotificationDto>> GetEmployeeNotifications(string id)
         {
-            int employeeId = _employeeRepository.ReadAsyncEmployeeId(id).Result;
-            var partners = _notificationPartnerRepository.ReadAsyncPartnerByEmployeeId(employeeId).Result;
+            using (var context = new netflix_prContext())
+            {
+                int employeeId = _employeeRepository.ReadAsyncEmployeeId(context, id).Result;
+                var partners = _notificationPartnerRepository.ReadAsyncPartnerByEmployeeId(context, employeeId).Result;
 
-            return await _notificationRepository.ReadManyAsyncNotificationFromPartners(partners);                   
+                return await _notificationRepository.ReadManyAsyncNotificationFromPartners(context, partners);
+            }                                 
         }
 
         public async Task<List<NotificationDto>> GetProjectNotification(string projectId)
         {
-            List<NotificationDto> notificationList = new List<NotificationDto>();
-            Project project = _projectRepository.ReadOneAsyncBySAPId(projectId).Result;
+            using (var context = new netflix_prContext())
+            {
+                List<NotificationDto> notificationList = new List<NotificationDto>();
+                Project project = _projectRepository.ReadOneAsyncBySAPId(context, projectId).Result;
 
-            return await _notificationRepository.ReadManyAsyncProjectNotification(project.Id);
+                return await _notificationRepository.ReadManyAsyncProjectNotification(context, project.Id);
+            }                
         }
 
-        public async Task<List<double>> getEmployeeMonthlyWorkload(int employeeId)
+        public async Task<List<double>> getEmployeeMonthlyWorkload(netflix_prContext context, int employeeId)
         {
             double averageNumberOfWeekPerMonth = 4.33;
-            var employee = await _employeeRepository.ReadOneAsyncById(employeeId);
+            var employee = await _employeeRepository.ReadOneAsyncById(context, employeeId);
 
             double monthlyWorkload = (double)(averageNumberOfWeekPerMonth * employee.ProjectWorkRatio * employee.Workload);
 
             List<string> timeLine = createTimeLine();
             Dictionary<string, double> dictionnaryMonthlyWorkloadTimeLine = createTimelineDictionnary(timeLine);
 
-            foreach(var month in dictionnaryMonthlyWorkloadTimeLine.Keys)
+            foreach (var month in dictionnaryMonthlyWorkloadTimeLine.Keys)
             {
                 dictionnaryMonthlyWorkloadTimeLine[month] = monthlyWorkload;
             }
 
-            return dictionnaryMonthlyWorkloadTimeLine.Values.ToList();
+            return dictionnaryMonthlyWorkloadTimeLine.Values.ToList();             
         }
 
         public async Task<WorkloadDataDto> GetEmployeeNotificationsWorkload(string id)
         {
-            int employeeId = await _employeeRepository.ReadAsyncEmployeeId(id);
-
-            List<NotificationPartner> partners = await _notificationPartnerRepository.ReadAsyncPartnerByEmployeeId(employeeId);
-
-            List<string> timeLine = createTimeLine();
-            Dictionary<string, double> dictionnaryActualEffortTimeLine = createTimelineDictionnary(timeLine);
-            Dictionary<string, double> dictionnaryEstimatedEffortTimeLine = createTimelineDictionnary(timeLine);
-
-            foreach (NotificationPartner partner in partners)
+            using (var context = new netflix_prContext())
             {
-                Notification notification = await _notificationRepository.ReadOneAsyncNotificationById(partner.NotificationId);
-                List<string> notificationtimeLine = getListOfMonthBetweenTwoDates(Convert.ToDateTime(notification.CreationDate), Convert.ToDateTime(notification.EstEndDate));
+                int employeeId = await _employeeRepository.ReadAsyncEmployeeId(context, id);
 
-                double actualMonthlyWorkload = getMonthlyWorkload(notificationtimeLine, partner.actualEffort);
-                double estimatedMonthlyWorkload = getMonthlyWorkload(notificationtimeLine, partner.EstEffort);
+                List<NotificationPartner> partners = await _notificationPartnerRepository.ReadAsyncPartnerByEmployeeId(context, employeeId);
 
-                foreach (string month in notificationtimeLine)
+                List<string> timeLine = createTimeLine();
+                Dictionary<string, double> dictionnaryActualEffortTimeLine = createTimelineDictionnary(timeLine);
+                Dictionary<string, double> dictionnaryEstimatedEffortTimeLine = createTimelineDictionnary(timeLine);
+
+                foreach (NotificationPartner partner in partners)
                 {
-                    dictionnaryActualEffortTimeLine[month] = actualMonthlyWorkload;
-                    dictionnaryEstimatedEffortTimeLine[month] = estimatedMonthlyWorkload;
+                    Notification notification = await _notificationRepository.ReadOneAsyncNotificationById(context, partner.NotificationId);
+                    List<string> notificationtimeLine = getListOfMonthBetweenTwoDates(Convert.ToDateTime(notification.CreationDate), Convert.ToDateTime(notification.EstEndDate));
+
+                    double actualMonthlyWorkload = getMonthlyWorkload(notificationtimeLine, (double)partner.actualEffort);
+                    double estimatedMonthlyWorkload = getMonthlyWorkload(notificationtimeLine, (double)partner.EstEffort);
+
+                    foreach (string month in notificationtimeLine)
+                    {
+                        dictionnaryActualEffortTimeLine[month] = actualMonthlyWorkload;
+                        dictionnaryEstimatedEffortTimeLine[month] = estimatedMonthlyWorkload;
+                    }
                 }
-            }
 
-            WorkloadDataDto workload = new WorkloadDataDto();
-            workload.MonthCategory = timeLine;
-            workload.EstimatedSerie = dictionnaryEstimatedEffortTimeLine.Values.ToList();
-            workload.ActualSerie = dictionnaryActualEffortTimeLine.Values.ToList();
-            workload.MonthlyWorkload = await getEmployeeMonthlyWorkload(employeeId);
+                WorkloadDataDto workload = new WorkloadDataDto();
+                workload.MonthCategory = timeLine;
+                workload.EstimatedSerie = dictionnaryEstimatedEffortTimeLine.Values.ToList();
+                workload.ActualSerie = dictionnaryActualEffortTimeLine.Values.ToList();
+                workload.MonthlyWorkload = await getEmployeeMonthlyWorkload(context, employeeId);
 
-            return workload;
+                return workload;
+            }               
         }
 
         public async Task<IActionResult> RefreshNotificationsData()
         {
-            IEnumerable<NotificationSAP> notifications = new List<NotificationSAP>();
-            notifications = await _SAPService.GetSapNotification();
-            List<String> ExistingNotificationsInDatabase = await _notificationRepository.ReadManyAsyncNotificationSAPId();
-
-            foreach (NotificationSAP notification in notifications)
+            using (var context = new netflix_prContext())
             {
-                Notification notificationEntitity = new Notification();
-                try
-                {
-                    notificationEntitity = await _notificationRepository.CreateNotificationEntity(notification);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    continue;
-                }
-                if (!_notificationRepository.VerifiyIfNotificationExists(notificationEntitity).Result)
-                {
-                    _notificationRepository.AddNotification(notificationEntitity);
+                IEnumerable<NotificationSAP> notifications = new List<NotificationSAP>();
+                notifications = await _SAPService.GetSapNotification();
+                List<String> ExistingNotificationsInDatabase = await _notificationRepository.ReadManyAsyncNotificationSAPId(context);
 
-                    if (notification.Partners.Any())
-                    {
-                        try
-                        {
-                            AddPartners(notification.Partners, notificationEntitity);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                            continue;
-                        }
-                    }
-                }
-                else
+                foreach (NotificationSAP notification in notifications)
                 {
-                    if (await _notificationRepository.VerifiyIfNotificationAsBeenUpdated(notificationEntitity))
-                    {
-                        _notificationRepository.UpdateNotification(notificationEntitity);
-                    }
-                    _notificationPartnerRepository.UpdatePartner(notification);
-                }
-                ExistingNotificationsInDatabase.Remove(notificationEntitity.NotificationSapId);
-
-                if (notification.Tasks.Any())
-                {
+                    Notification notificationEntitity = new Notification();
                     try
                     {
-                        _taskService.UpdateTasks(notification.Tasks, notificationEntitity);
-
+                        notificationEntitity = await _notificationRepository.CreateNotificationEntity(context, notification);
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception(ex.Message);
+                        Console.WriteLine(ex.Message);
+                        continue;
+                    }
+                    if (!_notificationRepository.VerifiyIfNotificationExists(context, notificationEntitity).Result)
+                    {
+                        _notificationRepository.AddNotification(context, notificationEntitity);
+
+                        if (notification.Partners.Any())
+                        {
+                            try
+                            {
+                                AddPartners(context, notification.Partners, notificationEntitity);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                continue;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (await _notificationRepository.VerifiyIfNotificationAsBeenUpdated(context, notificationEntitity))
+                        {
+                            _notificationRepository.UpdateNotification(context, notificationEntitity);
+                        }
+                        _notificationPartnerRepository.UpdatePartner(context, notification);
+                    }
+                    ExistingNotificationsInDatabase.Remove(notificationEntitity.NotificationSapId);
+
+                    if (notification.Tasks.Any())
+                    {
+                        try
+                        {
+                            _taskService.UpdateTasks(notification.Tasks, notificationEntitity);
+
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(ex.Message);
+                        }
                     }
                 }
-            }
 
-            deleteUnexistingNotificationInSAP(ExistingNotificationsInDatabase);
+                deleteUnexistingNotificationInSAP(context, ExistingNotificationsInDatabase);
 
-            _notificationRepository.SaveData();
-            return new ObjectResult("Successfully refreshed...");            
-        }
-
-        
+                context.SaveChanges();
+                return new ObjectResult("Successfully refreshed...");
+            }                   
+        }        
     }
 }

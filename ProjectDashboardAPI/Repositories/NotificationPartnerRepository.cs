@@ -10,18 +10,16 @@ namespace ProjectDashboardAPI.Repositories
 {
     public class NotificationPartnerRepository : INotificationPartnerRepository
     {
-        private readonly netflix_prContext _context;
         private readonly INotificationPartnerMappingService _notificationPartnerMappingService;
 
-        public NotificationPartnerRepository(netflix_prContext context, INotificationPartnerMappingService notificationPartnerMappingService)
+        public NotificationPartnerRepository(INotificationPartnerMappingService notificationPartnerMappingService)
         {
-            _context = context;
             _notificationPartnerMappingService = notificationPartnerMappingService;
         }
 
-        public void AddPartner(NotificationPartner partner)
+        public void AddPartner(netflix_prContext context, NotificationPartner partner)
         {
-            _context.NotificationPartner.Add(partner);
+            context.NotificationPartner.Add(partner);
         }
 
         public string TrimZerosFromSAPId(string id)
@@ -45,18 +43,22 @@ namespace ProjectDashboardAPI.Repositories
             return concatenatedId;
         }
 
-        public Task<NotificationPartner> CreateNotificationPartnerEntity(Partner partner, Notification notification)
+        public Task<NotificationPartner> CreateNotificationPartnerEntity(netflix_prContext context, Partner partner, Notification notification)
         {
             Tuple<Partner, Notification> partnerInfo = Tuple.Create(partner, notification);
-            return System.Threading.Tasks.Task.FromResult(_notificationPartnerMappingService.Map(partnerInfo));
+            return System.Threading.Tasks.Task.FromResult(_notificationPartnerMappingService.Map(context, partnerInfo));
         }
 
-        public Task<IEnumerable<PartnerDto>> CreateNotificationPartnersDto(Notification notification)
+        public Task<IEnumerable<PartnerDto>> CreateNotificationPartnersDto(netflix_prContext context, Notification notification)
         {
-            var notificationPartners = (from p in _context.NotificationPartner
+            var test = (from p in context.NotificationPartner
+             where p.NotificationId == notification.Id
+             select p).FirstOrDefault();
+
+            var notificationPartners = (from p in context.NotificationPartner
                                         where p.NotificationId == notification.Id
-                                        join e in _context.Employe on p.EmployeId equals e.Id
-                                        join r in _context.Role on p.RoleId equals r.Id
+                                        join e in context.Employe on p.EmployeId equals e.Id
+                                        join r in context.Role on p.RoleId equals r.Id
                                         select new { notificationPartner = p, employee = e, role = r }).ToList();
 
             List<PartnerDto> partners = new List<PartnerDto>();
@@ -64,19 +66,19 @@ namespace ProjectDashboardAPI.Repositories
             foreach (var partner in notificationPartners)
             {
                 Tuple<Employe, Role> tuple = Tuple.Create(partner.employee, partner.role);
-                partners.Add(_notificationPartnerMappingService.Map(tuple));
+                partners.Add(_notificationPartnerMappingService.Map(context, tuple));
             }
             return System.Threading.Tasks.Task.FromResult(partners.AsEnumerable());            
         }
 
-        public Task<ProjectNetflixContributor> CreateProjectNetflixContributor(NotificationPartner partner)
+        public Task<ProjectNetflixContributor> CreateProjectNetflixContributor(netflix_prContext context, NotificationPartner partner)
         {
             int totalEffort = 0;
             var potentielDaysOfWork = 0;
             DateTime latestDate = DateTime.Today;
             DateTime StartDate = DateTime.Today;
 
-            var employee = (from p in _context.Employe
+            var employee = (from p in context.Employe
                             where p.Id == partner.EmployeId
                             select p).First();
 
@@ -121,35 +123,35 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(contributor_netflix);
         }
 
-        public Task<List<NotificationPartner>> ReadManyPartnersByNotification(Notification notification)
+        public Task<List<NotificationPartner>> ReadManyPartnersByNotification(netflix_prContext context, Notification notification)
         {
-            IEnumerable<NotificationPartner> notificaitionPartners = (from p in _context.NotificationPartner
+            IEnumerable<NotificationPartner> notificaitionPartners = (from p in context.NotificationPartner
                                                                where p.NotificationId == notification.Id
                                                                select p).ToList();
 
             return System.Threading.Tasks.Task.FromResult(notificaitionPartners.ToList());
         }
 
-        public Task<List<NotificationPartner>> ReadAsyncPartnerByEmployeeId(int id)
+        public Task<List<NotificationPartner>> ReadAsyncPartnerByEmployeeId(netflix_prContext context, int id)
         {
-            List<NotificationPartner> partners = (from p in _context.NotificationPartner
+            List<NotificationPartner> partners = (from p in context.NotificationPartner
                                                   where p.EmployeId == id
                                                   select p).ToList();
 
             return System.Threading.Tasks.Task.FromResult(partners);
         }
 
-        public void UpdatePartner(NotificationSAP notification)
+        public void UpdatePartner(netflix_prContext context, NotificationSAP notification)
         {
-            Notification n = (from p in _context.Notification
+            Notification n = (from p in context.Notification
                               where p.NotificationSapId == TrimZerosFromSAPId(notification.NotificationSapId)
                               select p).FirstOrDefault();
 
-            Dictionary<string, NotificationPartner> partners = (from p in _context.NotificationPartner
+            Dictionary<string, NotificationPartner> partners = (from p in context.NotificationPartner
                                                                 where p.NotificationId == n.Id
                                                                 select p).ToDictionary(p => p.ConcatenatedId, p => p);
 
-            var listOfPartnerTobeDeleted = (from p in _context.NotificationPartner
+            var listOfPartnerTobeDeleted = (from p in context.NotificationPartner
                                             where p.NotificationId == n.Id
                                             select p).ToDictionary(p => p.ConcatenatedId, p => p);
 
@@ -157,11 +159,11 @@ namespace ProjectDashboardAPI.Repositories
 
             foreach (var partner in notification.Partners)
             {
-                int employeeId = (from p in _context.Employe
+                int employeeId = (from p in context.Employe
                                   where p.IdSAP == TrimZerosFromSAPId(partner.EmployeId)
                                   select p.Id).FirstOrDefault();
 
-                int roleId = (from p in _context.Role
+                int roleId = (from p in context.Role
                               where p.RoleSigle == partner.Role
                               select p.Id).FirstOrDefault();
 
@@ -180,7 +182,7 @@ namespace ProjectDashboardAPI.Repositories
             {
                 foreach (NotificationPartner partner in listOfPartnerTobeDeleted.Values)
                 {
-                    _context.NotificationPartner.Remove(partner);
+                    context.NotificationPartner.Remove(partner);
                 }
             }
             if (listOfPartnerTobeAdded.Any())
@@ -189,8 +191,8 @@ namespace ProjectDashboardAPI.Repositories
                 {
                     try
                     {                        
-                        var p = _notificationPartnerMappingService.Map(Tuple.Create(partner, n));
-                        AddPartner(p);
+                        var p = _notificationPartnerMappingService.Map(context, Tuple.Create(partner, n));
+                        AddPartner(context, p);
                     }
                     catch (Exception ex)
                     {
@@ -202,9 +204,9 @@ namespace ProjectDashboardAPI.Repositories
             }
         }
 
-        public void DeletePartner(NotificationPartner partner)
+        public void DeletePartner(netflix_prContext context, NotificationPartner partner)
         {
-            _context.Remove(partner);
+            context.Remove(partner);
         }
     }
 }

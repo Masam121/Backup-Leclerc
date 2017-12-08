@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Services
 {
-    public interface INotificationMappingService : IMapper<Notification, NotificationDto>, IMapper<NotificationSAP, Notification>
+    public interface INotificationMappingService : IMapper<netflix_prContext, Notification, NotificationDto>, IMapper<netflix_prContext, NotificationSAP, Notification>
     {
     }
 }

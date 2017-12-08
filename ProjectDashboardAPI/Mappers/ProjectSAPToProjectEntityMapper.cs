@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Mappers
 {
-    public class ProjectSAPToProjectEntityMapper : IMapper<ProjectSAP, Project>
+    public class ProjectSAPToProjectEntityMapper : IMapper<netflix_prContext, ProjectSAP, Project>
     {
         private IEmployeeRepository _employeeRepository;
 
@@ -49,7 +49,7 @@ namespace ProjectDashboardAPI.Mappers
             return projectSAPIdwithoutUnusedDigit;
         }
 
-        public Project Map(ProjectSAP project)
+        public Project Map(netflix_prContext context, ProjectSAP project)
         {
             var entity = new Project();
             entity.ProjectSapId = RemoveUnusedDigitFromSAPProjectId(project.id_SAP);
@@ -62,7 +62,7 @@ namespace ProjectDashboardAPI.Mappers
             else
             {
                 projectOwnerID = project.projectOwnerId.TrimStart('0');
-                entity.ProjectOwnerId = _employeeRepository.ReadAsyncEmployeeId(projectOwnerID).Result;
+                entity.ProjectOwnerId = _employeeRepository.ReadAsyncEmployeeId(context, projectOwnerID).Result;
             }
 
             String managerID;
@@ -73,7 +73,7 @@ namespace ProjectDashboardAPI.Mappers
             else
             {
                 managerID = project.projectManagerId.TrimStart('0');
-                entity.ProjectManagerId = _employeeRepository.ReadAsyncEmployeeId(managerID).Result;
+                entity.ProjectManagerId = _employeeRepository.ReadAsyncEmployeeId(context, managerID).Result;
             }
 
             entity.ProjectName = project.projectNameFr;

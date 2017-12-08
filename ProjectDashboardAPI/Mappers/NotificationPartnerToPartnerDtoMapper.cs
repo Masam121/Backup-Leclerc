@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ProjectDashboardAPI.Mappers
 {
-    public class NotificationPartnerToPartnerDtoMapper : IMapper<Tuple<Employe, Role>, PartnerDto>
+    public class NotificationPartnerToPartnerDtoMapper : IMapper<netflix_prContext, Tuple<Employe, Role>, PartnerDto>
     {
-        public PartnerDto Map(Tuple<Employe, Role> entity)
+        public PartnerDto Map(netflix_prContext context, Tuple<Employe, Role> entity)
         {
             PartnerDto partnerDto = new PartnerDto();
 

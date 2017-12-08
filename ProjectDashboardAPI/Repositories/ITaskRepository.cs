@@ -8,14 +8,14 @@ namespace ProjectDashboardAPI.Repositories
 {
     public interface ITaskRepository
     {
-        Task<List<string>> ReadManyAsyncTaskConcatenatedIdByNotificationId(int id);
-        Task<Task> ReadOneAsycnTaskByConcatenatedId(string concatenatedId);
-        Task<List<Task>> ReadManyAsyncTaskByNotificationId(int id);
-        Task<Task> CreateTaskEntity(NotificationTask task, Notification notification);
-        Task<bool> VerifyIfTaskAlreadyExists(Task task);
-        Task<bool> VerifyIfTaskAsBeenModified(Task task);
-        void UpdateTask(Task task);
-        void DeleteTask(Task task);
-        void AddTask(Task task);
+        Task<List<string>> ReadManyAsyncTaskConcatenatedIdByNotificationId(netflix_prContext context, int id);
+        Task<Task> ReadOneAsycnTaskByConcatenatedId(netflix_prContext context, string concatenatedId);
+        Task<List<Task>> ReadManyAsyncTaskByNotificationId(netflix_prContext context, int id);
+        Task<Task> CreateTaskEntity(netflix_prContext context, NotificationTask task, Notification notification);
+        Task<bool> VerifyIfTaskAlreadyExists(netflix_prContext context, Task task);
+        Task<bool> VerifyIfTaskAsBeenModified(netflix_prContext context, Task task);
+        void UpdateTask(netflix_prContext context, Task task);
+        void DeleteTask(netflix_prContext context, Task task);
+        void AddTask(netflix_prContext context, Task task);
     }
 }
