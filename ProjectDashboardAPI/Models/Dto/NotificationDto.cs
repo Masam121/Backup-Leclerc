@@ -10,10 +10,13 @@ namespace ProjectDashboardAPI.Controllers
         public string Id { get; set; }
         public string description { get; set; }
         public string creationDate { get; set; }
+        public string startDate { get; set; }
         public string endDate { get; set; }
         public string status { get; set; }
-        public string estimatedEffort { get; set; }
+        public string estEffort { get; set; }
         public string actualEffort { get; set; }
+        public string completion { get; set; }
+        public string comparator { get; set; }
         public List<PartnerDto> partners { get; set; }
     }
 }

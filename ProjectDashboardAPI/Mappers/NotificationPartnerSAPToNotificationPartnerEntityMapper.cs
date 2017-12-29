@@ -60,6 +60,9 @@ namespace ProjectDashboardAPI.Mappers
                 throw new System.ArgumentException("A partner needs a role to be valid");
             }
             partnerEntity.ConcatenatedId = CreatePartnerConcatenatedId(entity.Item2.NotificationSapId, employeeId, roleId);
+
+            partnerEntity.actualEffort = double.Parse(entity.Item1.ActualEffort, System.Globalization.CultureInfo.InvariantCulture);
+            partnerEntity.EstEffort = double.Parse(entity.Item1.EstimatedEffort, System.Globalization.CultureInfo.InvariantCulture);
             return partnerEntity;
         }
             

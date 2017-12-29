@@ -43,10 +43,34 @@ namespace ProjectDashboardAPI.Repositories
             return concatenatedId;
         }
 
+        public bool VerifyIfPartnerAsBeenModified(NotificationPartner partner, Partner partnerSAP)
+        {
+            var ActualEffort = (double?)double.Parse(partnerSAP.ActualEffort, System.Globalization.CultureInfo.InvariantCulture);
+            var EstEffort = (double?)double.Parse(partnerSAP.EstimatedEffort, System.Globalization.CultureInfo.InvariantCulture);
+            if (partner.actualEffort == ActualEffort) ;
+            if (partner.actualEffort == ActualEffort && partner.EstEffort == EstEffort)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         public Task<NotificationPartner> CreateNotificationPartnerEntity(netflix_prContext context, Partner partner, Notification notification)
         {
             Tuple<Partner, Notification> partnerInfo = Tuple.Create(partner, notification);
             return System.Threading.Tasks.Task.FromResult(_notificationPartnerMappingService.Map(context, partnerInfo));
+        }
+
+        public Task<NotificationPartner> ReadOneNotificationPartnerByConcatenatedId(netflix_prContext context, string concatenatedId)
+        {
+            var partner = (from p in context.NotificationPartner
+                        where p.ConcatenatedId == concatenatedId
+                        select p).FirstOrDefault();
+
+            return System.Threading.Tasks.Task.FromResult(partner);
         }
 
         public Task<IEnumerable<PartnerDto>> CreateNotificationPartnersDto(netflix_prContext context, Notification notification)
@@ -168,6 +192,15 @@ namespace ProjectDashboardAPI.Repositories
                               select p.Id).FirstOrDefault();
 
                 string concatenatedId = CreatePartnerConcatenatedId(n.NotificationSapId, employeeId, roleId);
+
+                NotificationPartner NP = ReadOneNotificationPartnerByConcatenatedId(context, concatenatedId).Result;
+
+                if(NP != null)
+                {
+                    NP.actualEffort = double.Parse(partner.ActualEffort, System.Globalization.CultureInfo.InvariantCulture);
+                    NP.EstEffort = double.Parse(partner.EstimatedEffort, System.Globalization.CultureInfo.InvariantCulture);
+                    context.NotificationPartner.Update(NP);
+                }             
 
                 if (partners.ContainsKey(concatenatedId))
                 {

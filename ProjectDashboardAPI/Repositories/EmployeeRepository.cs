@@ -17,9 +17,9 @@ namespace ProjectDashboardAPI.Repositories
         {
             Employe employee = new Employe();
 
-            employee.Department = employeeSAP.department;
+            employee.Department = employeeSAP.departement;
             employee.Factory = employeeSAP.factory;
-            employee.HiredDate = Convert.ToDateTime(employeeSAP.hiredDate);
+            employee.HiredDate = Convert.ToDateTime(employeeSAP.hiredate);
             employee.IdSAP = employeeSAP.id_SAP.TrimStart('0');
             employee.LeclercEmail = employeeSAP.leclercEmail;
             employee.Name = employeeSAP.name;
@@ -27,7 +27,7 @@ namespace ProjectDashboardAPI.Repositories
             employee.Picture = employeeSAP.picture;
             employee.Workload = Convert.ToInt32(double.Parse(employeeSAP.workload, System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.NumberFormatInfo.InvariantInfo));
             employee.Title = employeeSAP.title;
-            //employee.SuperiorId = string.IsNullOrEmpty(employeeSAP.superior) ? (int?)null : int.Parse(employeeSAP.superior);
+            employee.SuperiorId = string.IsNullOrEmpty(employeeSAP.superior) ? (int?)null : int.Parse(employeeSAP.superior);
             employee.ProjectWorkRatio = 100;
 
             return System.Threading.Tasks.Task.FromResult(employee);
@@ -40,6 +40,13 @@ namespace ProjectDashboardAPI.Repositories
                               select p.Id).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(employeeId);
+        }
+
+        public Task<List<Employe>> ReadManyAsyncEmployee(netflix_prContext context)
+        {
+            List<Employe> employees = (from p in context.Employe
+                              select p).ToList();
+            return System.Threading.Tasks.Task.FromResult(employees);
         }
 
         public Task<Employe> ReadOneAsyncById(netflix_prContext context, int id)
@@ -56,6 +63,10 @@ namespace ProjectDashboardAPI.Repositories
             Employe employee = (from p in context.Employe
                                 where p.IdSAP == id
                                 select p).FirstOrDefault();
+
+            string dep = (from p in context.Employe
+                                where p.IdSAP == id
+                                select p.Department).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(employee);
         }
@@ -77,7 +88,7 @@ namespace ProjectDashboardAPI.Repositories
             existingEmployee.Workload = employeeEntity.Workload;
             existingEmployee.Title = employeeEntity.Title;
             //existingEmployee.SuperiorId = employeeEntity.SuperiorId;
-            existingEmployee.ProjectWorkRatio = employeeEntity.ProjectWorkRatio;
+            //existingEmployee.ProjectWorkRatio = employeeEntity.ProjectWorkRatio;
 
             context.Employe.Update(existingEmployee);
         }
@@ -95,9 +106,10 @@ namespace ProjectDashboardAPI.Repositories
                             existingEmploye.O365Id == employeeEntity.O365Id &&
                             existingEmploye.Picture == employeeEntity.Picture &&
                             existingEmploye.Workload == employeeEntity.Workload &&
-                            existingEmploye.Title == employeeEntity.Title &&
+                            existingEmploye.Title == employeeEntity.Title
                             //existingEmploye.SuperiorId == employeeEntity.SuperiorId &&
-                            existingEmploye.ProjectWorkRatio == employeeEntity.ProjectWorkRatio)
+                            //existingEmploye.ProjectWorkRatio == employeeEntity.ProjectWorkRatio
+                            )
             {
                 return false;
             }

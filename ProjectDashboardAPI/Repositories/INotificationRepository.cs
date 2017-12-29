@@ -10,6 +10,7 @@ namespace ProjectDashboardAPI.Repositories
     public interface INotificationRepository
     {
         Task<List<NotificationDto>> ReadManyAsync(netflix_prContext context);
+        Task<List<NotificationDto>> ReadManyAsyncActive(netflix_prContext context);
         Task<NotificationDto> ReadOneAsyncNotificationDtoById(netflix_prContext context, int id);
         Task<Notification> ReadOneAsyncNotificationById(netflix_prContext context, int id);
         Task<int> ReadOneAsyncNotificationIdByNotificationSAPId(netflix_prContext context, string id);
@@ -17,8 +18,9 @@ namespace ProjectDashboardAPI.Repositories
         Task<NotificationDto> CreateNotification(netflix_prContext context, Notification notification);
         Task<Notification> CreateNotificationEntity(netflix_prContext context, NotificationSAP notificationSAP);
         Task<List<NotificationDto>> ReadManyAsyncDepartmentalNotification(netflix_prContext context, string departmentId);
-        Task<List<NotificationDto>> ReadManyAsyncProjectNotification(netflix_prContext context, int projectId);
-        Task<List<NotificationDto>> ReadManyAsyncNotificationFromPartners(netflix_prContext context, List<NotificationPartner> partners);
+        Task<List<NotificationDto>> ReadManyAsyncProjectNotificationDto(netflix_prContext context, int projectId);
+        Task<List<Notification>> ReadManyAsyncProjectNotification(netflix_prContext context, int projectId);
+        Task<List<NotificationDto>> ReadManyAsyncNotificationDtoFromPartners(netflix_prContext context, List<NotificationPartner> partners);
         Task<List<string>> ReadManyAsyncNotificationSAPId(netflix_prContext context);
         Task<Boolean> VerifiyIfNotificationExists(netflix_prContext context, Notification notification);
         Task<Boolean> VerifiyIfNotificationAsBeenUpdated(netflix_prContext context, Notification notification);

@@ -8,6 +8,7 @@ namespace ProjectDashboardAPI.Repositories
 {
     public interface IEmployeeRepository
     {
+        Task<List<Employe>> ReadManyAsyncEmployee(netflix_prContext context);
         Task<int> ReadAsyncEmployeeId(netflix_prContext context, string id);
         Task<Employe> ReadOneAsyncById(netflix_prContext context, int id);
         Task<Employe> ReadOneAsyncBySAPId(netflix_prContext context, string id);

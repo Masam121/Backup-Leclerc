@@ -16,14 +16,16 @@ namespace ProjectDashboardAPI.Services
         private IEmployeeRepository _employeeRepository;
         private ISapService _sapService;
         private IBudgetRepository _budgetRepository;
+        private ITaskRepository _taskRepository;
+        private ITaskOwnerRepository _taskOwnerRepository;
 
         //Sorting Lists
         private List<string> allFacilitySorting = new List<string> { "1", "undefined" };
 
         private List<string> Administration = new List<string> { "050", "060", "070", "150", "160", "910", "950", "960", "970" };
-        private List<string> Ventes = new List<string> { "370", "530", "550", "650", "670", "710", "750", "790" };
+        private List<string> Support = new List<string> { "370", "530", "550", "650", "670", "710", "750", "790" };
         private List<string> Logistique = new List<string> { "450", "820", "850" };
-        private List<string> Support = new List<string> { "230", "250", "280", "290", "350"};
+        private List<string> Ventes = new List<string> { "230", "250", "280", "290", "350"};
 
         private List<string> exceedingBudgetSorting = new List<string> { "En dépassement de budget", "Exceeding budget", "Exceder el persupuesto" };
         private List<string> exceedingXAmountSorting = new List<string> { "Coutant plus de 100 000$", "Cost more than 100 000$", "Coste de más de 100 000 $" };
@@ -34,13 +36,17 @@ namespace ProjectDashboardAPI.Services
                               INotificationPartnerRepository notificationPartnerRepository,
                               IEmployeeRepository employeeRepository,
                               IBudgetRepository budgetRepository,
-                              ISapService sapService)
+                              ISapService sapService,
+                              ITaskRepository taskRepository,
+                              ITaskOwnerRepository taskOwnerRepository)
         {
             _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
             _notificationRepository = notificationRepository ?? throw new ArgumentNullException(nameof(notificationRepository));
             _notificaiotnPartnerRepository = notificationPartnerRepository ?? throw new ArgumentNullException(nameof(notificationPartnerRepository));
             _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
             _budgetRepository = budgetRepository ?? throw new ArgumentNullException(nameof(budgetRepository));
+            _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
+            _taskOwnerRepository = taskOwnerRepository ?? throw new ArgumentNullException(nameof(taskOwnerRepository));
 
             _sapService = sapService ?? throw new ArgumentNullException(nameof(sapService));
         }
@@ -221,33 +227,26 @@ namespace ProjectDashboardAPI.Services
                 List<NotificationPartner> partners = await _notificaiotnPartnerRepository.ReadAsyncPartnerByEmployeeId(context, employeeId.Result);
 
                 List<int> partnerIdAlreadyAdded = new List<int>();
-                List<Notification> notifications = new List<Notification>();
+                List<int> projectAlreadyAdded = new List<int>();
 
                 foreach (var partner in partners)
                 {
                     if (!partnerIdAlreadyAdded.Contains(partner.NotificationId))
                     {
                         Notification notification = await _notificationRepository.ReadOneAsyncNotificationById(context, partner.NotificationId);
-
-                        notifications.Add(notification);
                         partnerIdAlreadyAdded.Add(partner.NotificationId);
+
+                        Project project = await _projectRepository.ReadOneAsyncById(context, notification.ProjectId);
+
+                        if (!projectAlreadyAdded.Contains(project.Id))
+                        {
+                            ProjectNetflixCard p = await _projectRepository.CreateProjectNetflixCard(context, project);
+
+                            projects.Add(p);
+                            projectAlreadyAdded.Add(project.Id);
+                        }
                     }
-                }
-
-                List<int> projectAlreadyAdded = new List<int>();
-                foreach (Notification notification in notifications)
-                {
-                    var project = _projectRepository.ReadOneAsyncById(context, notification.ProjectId);
-
-                    if (!projectAlreadyAdded.Contains(project.Id))
-                    {
-                        var p = _projectRepository.CreateProjectNetflixCard(context, project.Result);
-
-                        projects.Add(p.Result);
-                        projectAlreadyAdded.Add(p.Id);
-                    }
-                }
-
+                }             
                 return projects;
             }               
         }
@@ -365,6 +364,26 @@ namespace ProjectDashboardAPI.Services
                             if (projectToBeDeleted != null)
                             {
                                 _projectRepository.DeleteProject(context, projectToBeDeleted);
+                                List<Notification> notificationsToBeDeleted =  await _notificationRepository.ReadManyAsyncProjectNotification(context, projectToBeDeleted.Id);
+                                foreach(Notification notification in notificationsToBeDeleted)
+                                {
+                                    _notificationRepository.DeleteNotification(context, notification);
+                                    List<NotificationPartner> partnersToBeDeleted = await _notificaiotnPartnerRepository.ReadManyPartnersByNotification(context, notification);
+                                    foreach (NotificationPartner partner in partnersToBeDeleted)
+                                    {
+                                        _notificaiotnPartnerRepository.DeletePartner(context, partner);
+                                    }
+                                    List<Task> taskToBeDeleted =  await _taskRepository.ReadManyAsyncTaskByNotificationId(context, notification.Id);
+                                    foreach (Task task in taskToBeDeleted)
+                                    {
+                                        _taskRepository.DeleteTask(context, task);
+                                        TaskOwner taskOnwerToBeDeleted = await _taskOwnerRepository.ReadOneAsyncTaskOwnerByTaskId(context, task.Id);
+                                        if(taskOnwerToBeDeleted != null)
+                                        {
+                                            _taskOwnerRepository.DeleteTaskOwner(context, taskOnwerToBeDeleted);
+                                        }                                       
+                                    }
+                                }                                
                             }
                         }
                     }

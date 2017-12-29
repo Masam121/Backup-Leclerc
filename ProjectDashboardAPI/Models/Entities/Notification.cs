@@ -12,12 +12,12 @@ namespace ProjectDashboardAPI
         }
 
         public int Id { get; set; }
-        public int? ActualEffort { get; set; }
+        public double? ActualEffort { get; set; }
         public DateTime? CompletedDate { get; set; }
         public DateTime CreationDate { get; set; }
         public string Department { get; set; }
         public string Description { get; set; }
-        public int EstEffort { get; set; }
+        public double? EstEffort { get; set; }
         public DateTime EstEndDate { get; set; }
         public bool IsCompleted { get; set; }
         public string NotificationSapId { get; set; }

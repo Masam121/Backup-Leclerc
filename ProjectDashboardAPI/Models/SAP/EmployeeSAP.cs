@@ -8,9 +8,9 @@ namespace NetflixAPI.Models
     public class EmployeeSAP
     {
         public string id_SAP { get; set; }
-        public string department { get; set; }
+        public string departement { get; set; }
         public string factory { get; set; }
-        public string hiredDate { get; set; }
+        public string hiredate { get; set; }
         public string leclercEmail { get; set; }
         public string name { get; set; }
         public string o365 { get; set; }

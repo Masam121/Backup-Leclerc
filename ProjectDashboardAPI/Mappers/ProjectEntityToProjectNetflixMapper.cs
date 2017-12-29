@@ -86,18 +86,22 @@ namespace ProjectDashboardAPI.Mappers
             {
                 project_netxlix.ManagerName = "Unknown";
                 project_netxlix.ManagerPicture = "http://www.getsmartcontent.com/content/uploads/2014/08/shutterstock_149293433.jpg";
+                project_netxlix.ProjectManagerId = null;
+
             }
             else
             {
                 project_netxlix.ManagerName = manager.Name;
                 project_netxlix.ManagerPicture = manager.Picture;
+                project_netxlix.ProjectManagerId = Int32.Parse(manager.IdSAP);
             }
+            //project_netxlix.ProjectOwnerId = entity.ProjectOwnerId;
 
             project_netxlix.Id = entity.Id;
             project_netxlix.Priority = entity.Priority;
-            project_netxlix.ProjectManagerId = entity.ProjectManagerId;
+            
             project_netxlix.ProjectName = entity.ProjectName;
-            project_netxlix.ProjectOwnerId = entity.ProjectOwnerId;
+            
             project_netxlix.ProjectSapId = entity.ProjectSapId;
             project_netxlix.ProjectsClient = entity.ProjectsClient;
             project_netxlix.ProjectStatus = entity.ProjectStatus;

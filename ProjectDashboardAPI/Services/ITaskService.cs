@@ -8,6 +8,6 @@ namespace ProjectDashboardAPI.Services
 {
     public interface ITaskService
     {
-        void UpdateTasks(List<NotificationTask> tasks , Notification notification);
+        void UpdateTasks(netflix_prContext context, List<NotificationTask> tasks , Notification notification);
     }
 }

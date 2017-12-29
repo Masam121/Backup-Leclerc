@@ -156,7 +156,7 @@ namespace ProjectDashboardAPI.Repositories
 
         public void DeleteProject(netflix_prContext context, Project project)
         {
-            context.Project.Remove(project);           
+            context.Project.Remove(project); 
         }
 
         public void SaveData(netflix_prContext context)

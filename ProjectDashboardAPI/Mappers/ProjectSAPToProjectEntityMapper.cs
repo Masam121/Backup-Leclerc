@@ -54,26 +54,40 @@ namespace ProjectDashboardAPI.Mappers
             var entity = new Project();
             entity.ProjectSapId = RemoveUnusedDigitFromSAPProjectId(project.id_SAP);
 
-            String projectOwnerID;
             if (string.IsNullOrEmpty(project.projectOwnerId))
             {
                 entity.ProjectOwnerId = null;
             }
             else
             {
-                projectOwnerID = project.projectOwnerId.TrimStart('0');
-                entity.ProjectOwnerId = _employeeRepository.ReadAsyncEmployeeId(context, projectOwnerID).Result;
+                string projectOwnerID = project.projectOwnerId.TrimStart('0');
+                var projectOwner = _employeeRepository.ReadAsyncEmployeeId(context, projectOwnerID).Result;               
+                if (projectOwner != 0)
+                {
+                    entity.ProjectOwnerId = projectOwner;
+                }
+                else
+                {
+                    entity.ProjectOwnerId = null;
+                }
             }
 
-            String managerID;
             if (string.IsNullOrEmpty(project.projectManagerId))
             {
                 entity.ProjectManagerId = null;
             }
             else
             {
-                managerID = project.projectManagerId.TrimStart('0');
-                entity.ProjectManagerId = _employeeRepository.ReadAsyncEmployeeId(context, managerID).Result;
+                string managerID = project.projectManagerId.TrimStart('0');
+                var projectManager = _employeeRepository.ReadAsyncEmployeeId(context, managerID).Result;
+                if(projectManager != 0)
+                {
+                    entity.ProjectManagerId = projectManager;
+                }
+                else
+                {
+                    entity.ProjectManagerId = null;
+                }
             }
 
             entity.ProjectName = project.projectNameFr;

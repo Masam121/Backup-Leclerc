@@ -18,55 +18,52 @@ namespace ProjectDashboardAPI.Services
             _taskOwnerRepository = taskOwnerRepository ?? throw new ArgumentNullException(nameof(taskOwnerRepository));
         }
 
-        public void UpdateTasks(List<NotificationTask> tasks, Notification notification)
+        public void UpdateTasks(netflix_prContext context, List<NotificationTask> tasks, Notification notification)
         {
-            using (var context = new netflix_prContext())
+            List<String> ExistingTasksId = _taskRepository.ReadManyAsyncTaskConcatenatedIdByNotificationId(context, notification.Id).Result;
+
+            foreach (NotificationTask task in tasks)
             {
-                List<String> ExistingTasksId = _taskRepository.ReadManyAsyncTaskConcatenatedIdByNotificationId(context, notification.Id).Result;
-
-                foreach (NotificationTask task in tasks)
+                Task taskEntity = _taskRepository.CreateTaskEntity(context, task, notification).Result;
+                if (_taskRepository.VerifyIfTaskAlreadyExists(context, taskEntity).Result)
                 {
-                    Task taskEntity = _taskRepository.CreateTaskEntity(context, task, notification).Result;
-                    if (_taskRepository.VerifyIfTaskAlreadyExists(context, taskEntity).Result)
+                    if (_taskRepository.VerifyIfTaskAsBeenModified(context, taskEntity).Result)
                     {
-                        if (_taskRepository.VerifyIfTaskAsBeenModified(context, taskEntity).Result)
-                        {
-                            _taskRepository.UpdateTask(context, taskEntity);
-                        }
+                        _taskRepository.UpdateTask(context, taskEntity);
                     }
-                    else
+                }
+                else
+                {
+                    _taskRepository.AddTask(context, taskEntity);
+
+                    try
                     {
-                        _taskRepository.AddTask(context, taskEntity);
-
-                        try
-                        {
-                            var taskOwner = _taskOwnerRepository.CreateTaskOwner(context, task.EmployeeId, taskEntity).Result;
-                            _taskOwnerRepository.AddTaskOwner(context, taskOwner);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine(ex.Message);
-                        }
-
+                        var taskOwner = _taskOwnerRepository.CreateTaskOwner(context, task.EmployeeId, taskEntity).Result;
+                        _taskOwnerRepository.AddTaskOwner(context, taskOwner);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
                     }
 
-                    ExistingTasksId.Remove(task.SAPid);
                 }
 
-                if (ExistingTasksId.Any())
+                ExistingTasksId.Remove(task.SAPid);
+            }
+
+            if (ExistingTasksId.Any())
+            {
+                foreach (String ConcatenatedId in ExistingTasksId)
                 {
-                    foreach (String ConcatenatedId in ExistingTasksId)
+                    Task TaskToBeDeleted = _taskRepository.ReadOneAsycnTaskByConcatenatedId(context, ConcatenatedId).Result;
+
+
+                    if (TaskToBeDeleted != null)
                     {
-                        Task TaskToBeDeleted = _taskRepository.ReadOneAsycnTaskByConcatenatedId(context, ConcatenatedId).Result;
+                        TaskOwner TaskOwnerToBeDeleted = _taskOwnerRepository.ReadOneAsyncTaskOwnerByTaskId(context, TaskToBeDeleted.Id).Result;
 
-
-                        if (TaskToBeDeleted != null)
-                        {
-                            TaskOwner TaskOwnerToBeDeleted = _taskOwnerRepository.ReadOneAsyncTaskOwnerByTaskId(context, TaskToBeDeleted.Id).Result;
-
-                            _taskRepository.DeleteTask(context, TaskToBeDeleted);
-                            _taskOwnerRepository.DeleteTaskOwner(context, TaskOwnerToBeDeleted);
-                        }
+                        _taskRepository.DeleteTask(context, TaskToBeDeleted);
+                        _taskOwnerRepository.DeleteTaskOwner(context, TaskOwnerToBeDeleted);
                     }
                 }
             }               

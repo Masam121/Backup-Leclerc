@@ -65,8 +65,8 @@ namespace ProjectDashboardAPI.Mappers
             notificationEntity.Status = SetNotificationStatus(entity);
             notificationEntity.Department = entity.Department;
             notificationEntity.Priority = entity.Priority;
-            notificationEntity.EstEffort = string.IsNullOrEmpty(entity.EstEffort) ? 0 : Convert.ToInt32(entity.EstEffort);
-            notificationEntity.ActualEffort = string.IsNullOrEmpty(entity.ActualEffort) ? 0 : Convert.ToInt32(entity.ActualEffort);
+            notificationEntity.EstEffort = double.Parse(entity.EstEffort, System.Globalization.CultureInfo.InvariantCulture);
+            notificationEntity.ActualEffort = double.Parse(entity.ActualEffort, System.Globalization.CultureInfo.InvariantCulture);
             notificationEntity.IsCompleted = SetNotificationIsCompleted(entity);
             notificationEntity.CompletedDate = entity.CompletedDate;
 

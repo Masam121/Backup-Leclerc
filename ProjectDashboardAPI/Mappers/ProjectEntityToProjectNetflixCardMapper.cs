@@ -20,7 +20,8 @@ namespace ProjectDashboardAPI.Mappers
         {
             ProjectNetflixCard project_netxlix_card = new ProjectNetflixCard();
 
-            int managerId = entity.ProjectManagerId ?? default(int);
+            int managerId = entity.ProjectManagerId.GetValueOrDefault();
+
             var manager = _emplopyeeRepository.ReadOneAsyncById(context, managerId).Result;
 
             if (manager == null)

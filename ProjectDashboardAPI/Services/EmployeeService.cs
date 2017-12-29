@@ -27,22 +27,23 @@ namespace ProjectDashboardAPI.Services
             {
                 Employe employeeEntity = await _employeeRepository.ReadOneAsyncBySAPId(context, id);
 
-                EmployeeNetflixDetail employee_detail_netflix = new EmployeeNetflixDetail()
-                {
-                    Id = employeeEntity.Id,
-                    Department = employeeEntity.Department,
-                    Factory = employeeEntity.Factory,
-                    HiredDate = employeeEntity.HiredDate.ToString("MMMM, yyyy"),
-                    LeclercEmail = employeeEntity.LeclercEmail,
-                    Name = employeeEntity.Name,
-                    Picture = employeeEntity.Picture,
-                    O365Id = employeeEntity.O365Id,
-                    ProjectWorkRatio = employeeEntity.ProjectWorkRatio,
-                    SuperiorId = employeeEntity.SuperiorId,
-                    Title = employeeEntity.Title,
-                    Workload = employeeEntity.Workload,
-                    IdSAP = employeeEntity.IdSAP
-                };
+                EmployeeNetflixDetail employee_detail_netflix = new EmployeeNetflixDetail();
+
+                employee_detail_netflix.Id = employeeEntity.Id;
+                employee_detail_netflix.Department = employeeEntity.Department;
+                employee_detail_netflix.Factory = employeeEntity.Factory;
+                employee_detail_netflix.HiredDate = employeeEntity.HiredDate.ToString("MMMM, yyyy");
+                employee_detail_netflix.LeclercEmail = employeeEntity.LeclercEmail;
+                employee_detail_netflix.Name = employeeEntity.Name;
+                employee_detail_netflix.Picture = employeeEntity.Picture;
+                employee_detail_netflix.O365Id = employeeEntity.O365Id;
+                employee_detail_netflix.ProjectWorkRatio = employeeEntity.ProjectWorkRatio;
+                employee_detail_netflix.SuperiorId = employeeEntity.SuperiorId;
+                employee_detail_netflix.Title = employeeEntity.Title;
+                employee_detail_netflix.Workload = employeeEntity.Workload;
+                employee_detail_netflix.IdSAP = employeeEntity.IdSAP;
+
+
                 return employee_detail_netflix;
             }               
         }
@@ -78,7 +79,7 @@ namespace ProjectDashboardAPI.Services
                     IEnumerable<EmployeeSAP> employees = await _sapService.GetSapEmployee();
                     foreach (EmployeeSAP employeeSAP in employees)
                     {
-                        if (await _employeeRepository.VerifyIfEmployeeExistsBySapId(context, employeeSAP.id_SAP))
+                        if (await _employeeRepository.VerifyIfEmployeeExistsBySapId(context, employeeSAP.id_SAP.TrimStart('0')))
                         {
                             var employeeEntity = await _employeeRepository.CreateEmployee(context, employeeSAP);
                             if (await _employeeRepository.VerifyIfEmployeeAsBeenModified(context, employeeEntity))
@@ -92,6 +93,7 @@ namespace ProjectDashboardAPI.Services
                             _employeeRepository.AddEmployee(context, employeeEntity);
                         }
                     }
+                    context.SaveChanges();
                     return new ObjectResult("Successfully refreshed...");
                 }
                 catch (Exception ex)

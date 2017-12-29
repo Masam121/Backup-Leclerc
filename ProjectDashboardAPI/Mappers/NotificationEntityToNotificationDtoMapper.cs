@@ -44,7 +44,7 @@ namespace ProjectDashboardAPI.Mappers
             notificationDto.status = entity.Status;
             notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(context, entity).Result.ToList();
             notificationDto.actualEffort = entity.ActualEffort.ToString();
-            notificationDto.estimatedEffort = entity.EstEffort.ToString();
+            notificationDto.estEffort = entity.EstEffort.ToString();
 
 
             return notificationDto;

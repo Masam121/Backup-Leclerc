@@ -29,7 +29,7 @@ namespace ProjectDashboardAPI.Models.Dto
         [JsonProperty(PropertyName = "completed_date")]
         public DateTime? CompletedDate { get; set; }
 
-        [JsonProperty(PropertyName = "est_EFfort")]
+        [JsonProperty(PropertyName = "est_Effort")]
         public string EstEffort { get; set; }
 
         [JsonProperty(PropertyName = "status")]

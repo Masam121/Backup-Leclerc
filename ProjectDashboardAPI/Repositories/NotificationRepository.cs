@@ -29,6 +29,18 @@ namespace ProjectDashboardAPI.Repositories
             return projectSAPIdwithoutUnusedDigit;
         }
 
+        public double GetBusinessDays(DateTime startD, DateTime endD)
+        {
+            double calcBusinessDays =
+                1 + ((endD - startD).TotalDays * 5 -
+                (startD.DayOfWeek - endD.DayOfWeek) * 2) / 7;
+
+            if (endD.DayOfWeek == DayOfWeek.Saturday) calcBusinessDays--;
+            if (startD.DayOfWeek == DayOfWeek.Sunday) calcBusinessDays--;
+
+            return calcBusinessDays;
+        }
+
         protected bool VerifyIfNotificationHasValideProjectAffiliated(netflix_prContext context, string projectSAPId)
         {
             int projectId = (from p
@@ -64,6 +76,37 @@ namespace ProjectDashboardAPI.Repositories
             {
                 notificationDto.endDate = notification.EstEndDate.ToString("yyyy-MM-dd");
             }
+            if (notification.StartDate == nullDate)
+            {
+                notificationDto.startDate = null;
+            }
+            else
+            {
+                notificationDto.startDate = notification.StartDate.ToString("yyyy-MM-dd");
+            }
+            notificationDto.estEffort = notification.EstEffort.ToString();
+            notificationDto.actualEffort = notification.ActualEffort.ToString();
+            if (notification.StartDate != nullDate && notification.EstEndDate != nullDate)
+            {
+                double workingDays = GetBusinessDays(notification.StartDate, notification.EstEndDate);
+                double workingDaysSoFar = GetBusinessDays(notification.StartDate, DateTime.Today);
+                notificationDto.comparator = ((workingDaysSoFar / workingDays) * 100).ToString();
+
+                if(notification.ActualEffort != 0 && notification.EstEffort != 0)
+                {
+                    double percentageCompletion = Convert.ToDouble((notification.ActualEffort / notification.EstEffort) * 100);
+                    notificationDto.completion = Math.Round(percentageCompletion, 2).ToString();
+                }
+                else
+                {
+                    notificationDto.completion = 0.ToString();
+                }
+                
+            }
+            else
+            {
+                notificationDto.completion = 0.ToString();
+            }
             notificationDto.status = notification.Status;
 
             return System.Threading.Tasks.Task.FromResult(notificationDto);
@@ -85,7 +128,7 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(notificationList);
         }
 
-        public Task<List<NotificationDto>> ReadManyAsyncNotificationFromPartners(netflix_prContext context, List<NotificationPartner> partners)
+        public async Task<List<NotificationDto>> ReadManyAsyncNotificationDtoFromPartners(netflix_prContext context, List<NotificationPartner> partners)
         {
             List<string> partnerIdAlreadyAdded = new List<string>();
             List<NotificationDto> notifications = new List<NotificationDto>();
@@ -98,12 +141,16 @@ namespace ProjectDashboardAPI.Repositories
 
                 if (!partnerIdAlreadyAdded.Contains(notification.NotificationSapId))
                 {
-                    notifications.Add(CreateNotification(context, notification).Result);
+                    NotificationDto notificationDto = await CreateNotification(context, notification);
+                    notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(context, notification).Result.ToList();
+
+                    notifications.Add(notificationDto);
+
                     partnerIdAlreadyAdded.Add(notification.NotificationSapId);
                 }
             }
 
-            return System.Threading.Tasks.Task.FromResult(notifications);
+            return notifications;
         }
 
         public Task<List<NotificationDto>> ReadManyAsyncDepartmentalNotification(netflix_prContext context, string departmentId)
@@ -135,7 +182,7 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(notificationDto);
         }
 
-        public Task<List<NotificationDto>> ReadManyAsyncProjectNotification(netflix_prContext context, int projectId)
+        public Task<List<NotificationDto>> ReadManyAsyncProjectNotificationDto(netflix_prContext context, int projectId)
         {
             List<Notification> notifications = (from p in context.Notification
                                                 where p.ProjectId == projectId
@@ -150,6 +197,15 @@ namespace ProjectDashboardAPI.Repositories
             }
 
             return System.Threading.Tasks.Task.FromResult(notificationList);
+        }
+
+        public Task<List<Notification>> ReadManyAsyncProjectNotification(netflix_prContext context, int projectId)
+        {
+            List<Notification> notifications = (from p in context.Notification
+                                                where p.ProjectId == projectId
+                                                select p).ToList();
+
+            return System.Threading.Tasks.Task.FromResult(notifications);
         }
 
         public Task<List<string>> ReadManyAsyncNotificationSAPId(netflix_prContext context)
@@ -171,7 +227,7 @@ namespace ProjectDashboardAPI.Repositories
 
         public void DeleteNotification(netflix_prContext context, Notification notification)
         {
-            throw new NotImplementedException();
+            context.Notification.Remove(notification);
         }
 
         public void UpdateNotification(netflix_prContext context, Notification notification)
@@ -272,6 +328,23 @@ namespace ProjectDashboardAPI.Repositories
                                          select p).FirstOrDefault();
 
             return System.Threading.Tasks.Task.FromResult(notification);
+        }
+
+        public Task<List<NotificationDto>> ReadManyAsyncActive(netflix_prContext context)
+        {
+            IEnumerable<Notification> notifications = (from p in context.Notification
+                                                       where p.Status != "Completed"
+                                                       select p).ToList();
+
+            List<NotificationDto> notificationList = new List<NotificationDto>();
+            foreach (Notification notification in notifications)
+            {
+                NotificationDto notificationDto = CreateNotification(context, notification).Result;
+                notificationDto.partners = _notificationPartnerRepository.CreateNotificationPartnersDto(context, notification).Result.ToList();
+                notificationList.Add(notificationDto);
+            }
+
+            return System.Threading.Tasks.Task.FromResult(notificationList);
         }
     }
 }

@@ -187,8 +187,7 @@ namespace ProjectDashboardAPI
                     .HasColumnType("int(10)");
 
                 entity.Property(e => e.ActualEffort)
-                    .HasColumnName("actual_effort")
-                    .HasColumnType("int(10)");
+                    .HasColumnName("actual_effort");
 
                 entity.Property(e => e.CompletedDate).HasColumnName("Completed_date");
 
@@ -204,8 +203,7 @@ namespace ProjectDashboardAPI
                     .HasColumnName("description");
 
                 entity.Property(e => e.EstEffort)
-                    .HasColumnName("est_effort")
-                    .HasColumnType("int(10)");
+                    .HasColumnName("est_effort");
 
                 entity.Property(e => e.EstEndDate).HasColumnName("est_end_date");
 
@@ -376,7 +374,7 @@ namespace ProjectDashboardAPI
                 entity.HasOne(d => d.Budget)
                     .WithMany(p => p.Project)
                     .HasForeignKey(d => d.BudgetId)
-                    .OnDelete(DeleteBehavior.Restrict)
+                    .OnDelete(DeleteBehavior.Cascade)
                     .HasConstraintName("FKProject189077");
 
                 entity.HasOne(d => d.ProjectManager)
