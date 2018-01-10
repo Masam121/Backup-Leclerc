@@ -29,6 +29,7 @@ namespace ProjectDashboardAPI
         public int? SuperiorId { get; set; }
         public string Title { get; set; }
         public int? Workload { get; set; }
+        public bool isVendor { get; set; }
 
         public virtual ICollection<Project> ProjectProjectManager { get; set; }
         public virtual ICollection<Project> ProjectProjectOwner { get; set; }

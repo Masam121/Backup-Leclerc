@@ -20,7 +20,7 @@ namespace ProjectDashboardAPI.Services
 
         public void UpdateTasks(netflix_prContext context, List<NotificationTask> tasks, Notification notification)
         {
-            List<String> ExistingTasksId = _taskRepository.ReadManyAsyncTaskConcatenatedIdByNotificationId(context, notification.Id).Result;
+            List<String> ExistingTasksId = _taskRepository.ReadManyAsyncTaskConcatenatedIdByNotificationSAPId(context, notification.NotificationSapId).Result;
 
             foreach (NotificationTask task in tasks)
             {
@@ -48,7 +48,7 @@ namespace ProjectDashboardAPI.Services
 
                 }
 
-                ExistingTasksId.Remove(task.SAPid);
+                ExistingTasksId.Remove(taskEntity.ConcatenatedId);
             }
 
             if (ExistingTasksId.Any())

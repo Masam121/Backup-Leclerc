@@ -12,6 +12,8 @@ namespace ProjectDashboardAPI.Repositories
         Task<int> ReadAsyncEmployeeId(netflix_prContext context, string id);
         Task<Employe> ReadOneAsyncById(netflix_prContext context, int id);
         Task<Employe> ReadOneAsyncBySAPId(netflix_prContext context, string id);
+        Task<Employe> ReadOneAsyncByO365Id(netflix_prContext context, string id);
+        Task<List<string>> ReadManyAsyncOffice365Id(netflix_prContext context);
         Task<bool> VerifyIfEmployeeExistsBySapId(netflix_prContext context, string id);
         Task<bool> VerifyIfEmployeeAsBeenModified(netflix_prContext context, Employe employeeEntity);
         Task<Employe> CreateEmployee(netflix_prContext context, EmployeeSAP employeeSAP);

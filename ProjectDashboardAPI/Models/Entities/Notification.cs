@@ -21,6 +21,7 @@ namespace ProjectDashboardAPI
         public DateTime EstEndDate { get; set; }
         public bool IsCompleted { get; set; }
         public string NotificationSapId { get; set; }
+        public string OutlookId { get; set; }
         public string Priority { get; set; }
         public int ProjectId { get; set; }
         public DateTime StartDate { get; set; }

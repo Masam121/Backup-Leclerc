@@ -12,6 +12,7 @@ namespace ProjectDashboardAPI.Repositories
         Task<List<NotificationDto>> ReadManyAsync(netflix_prContext context);
         Task<List<NotificationDto>> ReadManyAsyncActive(netflix_prContext context);
         Task<NotificationDto> ReadOneAsyncNotificationDtoById(netflix_prContext context, int id);
+        Task<Notification> ReadOneAsyncNotificationByOutlookId(netflix_prContext context, string id);
         Task<Notification> ReadOneAsyncNotificationById(netflix_prContext context, int id);
         Task<int> ReadOneAsyncNotificationIdByNotificationSAPId(netflix_prContext context, string id);
         Task<Notification> ReadOneAsyncNotificationByNotificationSAPId(netflix_prContext context, string id);
@@ -23,6 +24,7 @@ namespace ProjectDashboardAPI.Repositories
         Task<List<NotificationDto>> ReadManyAsyncNotificationDtoFromPartners(netflix_prContext context, List<NotificationPartner> partners);
         Task<List<string>> ReadManyAsyncNotificationSAPId(netflix_prContext context);
         Task<Boolean> VerifiyIfNotificationExists(netflix_prContext context, Notification notification);
+        Task<Boolean> VerifyIfNotificationOulookExists(netflix_prContext context, Notification notification);
         Task<Boolean> VerifiyIfNotificationAsBeenUpdated(netflix_prContext context, Notification notification);
         void UpdateNotification(netflix_prContext context, Notification notification);
         void AddNotification(netflix_prContext context, Notification notification);

@@ -9,54 +9,37 @@ using MailKit.Net.Smtp;
 using MailKit;
 using MimeKit;
 using ProjectDashboardAPI;
+using ProjectDashboardAPI.Services;
 
 namespace NetflixAPI.Controllers
 {
     [Route("api/[controller]")]
     public class OutlookController : Controller
     {
-        private readonly netflix_prContext _context;
-        string[] _Users = new string[] { "christopherb@leclerc.ca", "marcelsm@leclerc.ca", "yanickm@leclerc.ca" };
-        List<int> projectIds = new List<int>();
-        //"valeriec@leclerc.ca", "marcelsm@leclerc.ca", "christopherb@leclerc.ca", "martinL@leclerc.ca", "antoineBo@leclerc.ca", "annej@leclerc.ca", "Lemieux@leclerc.ca", "Jean-Francois@leclerc.ca" 
-        public OutlookController(netflix_prContext context)
-        {
-            _context = context;
-            ExchangeService _service = new ExchangeService();
-            ExchangeCredentials _credentials = new WebCredentials("sharedtasks@leclerc.ca", "N3ljcJ2d1HJtfQn0YJjS");
-            _service.Credentials = (_credentials);
-            _service.Url = new Uri("https://outlook.office365.com/EWS/Exchange.asmx");
+        private readonly IOutlookService _outlookService;
 
-            foreach (string user in _Users)
+        public OutlookController(IOutlookService outlookService)
+        {
+            _outlookService = outlookService ?? throw new ArgumentNullException(nameof(outlookService));
+        }
+
+        [HttpGet("Refresh", Name = "RefreshOutlookTask")]
+        public async Task<IActionResult> RefreshOutlookTask()
+        {
+            try
             {
-                var userMailbox = new Mailbox(user);
-                var folderId = new FolderId(WellKnownFolderName.Tasks, userMailbox);
-                ItemView itemView = new ItemView(int.MaxValue);
-                var userItems = _service.FindItems(folderId, itemView);
-                var employee = (from p in _context.Employe
-                                where p.O365Id == user
-                                select p).First();
-                if (userItems.Result == null)
-                {
-                    continue;
-                }
-                //List<WrongProject> tasksWithWrongProjectId = CreateTask(userItems, employee);
-
-                //if (tasksWithWrongProjectId.Any())
-                //{
-                //    //SendModificationEmail(employee, tasksWithWrongProjectId);
-                //}
+                var response = await _outlookService.RefreshOutlookTask();
+                return Ok(response);
             }
-            //if (projectIds.Any())
-            //{
-            //    RecalculatCompletionPercentage();
-            //}
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
         }
-        [HttpGet]
-        public IEnumerable<ProjectDashboardAPI.Task> GetAll()
-        {
-            return _context.Task.ToList();
-        }
+
+        string[] _Users = new string[] { "christopherb@leclerc.ca", "marcelsm@leclerc.ca", "yanickm@leclerc.ca" };
+        //List<int> projectIds = new List<int>();
+        //"valeriec@leclerc.ca", "marcelsm@leclerc.ca", "christopherb@leclerc.ca", "martinL@leclerc.ca", "antoineBo@leclerc.ca", "annej@leclerc.ca", "Lemieux@leclerc.ca", "Jean-Francois@leclerc.ca" 
 
         //protected void RecalculatCompletionPercentage()
         //{

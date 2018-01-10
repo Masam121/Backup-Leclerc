@@ -10,5 +10,6 @@ namespace ProjectDashboardAPI.Models.Dto
         public string employeeName { get; set; }
         public string roleName { get; set; }
         public string roleSigle { get; set; }
+        public string estEffort { get; set; }
     }
 }

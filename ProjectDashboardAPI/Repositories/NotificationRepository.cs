@@ -95,7 +95,7 @@ namespace ProjectDashboardAPI.Repositories
                 if(notification.ActualEffort != 0 && notification.EstEffort != 0)
                 {
                     double percentageCompletion = Convert.ToDouble((notification.ActualEffort / notification.EstEffort) * 100);
-                    notificationDto.completion = Math.Round(percentageCompletion, 2).ToString();
+                    notificationDto.completion = Math.Round(percentageCompletion).ToString();
                 }
                 else
                 {
@@ -345,6 +345,30 @@ namespace ProjectDashboardAPI.Repositories
             }
 
             return System.Threading.Tasks.Task.FromResult(notificationList);
+        }
+
+        public Task<bool> VerifyIfNotificationOulookExists(netflix_prContext context, Notification notification)
+        {
+            string id = (from p in context.Notification
+                        where p.OutlookId == notification.OutlookId
+                        select p.OutlookId).FirstOrDefault();
+            if(id == null)
+            {
+                return System.Threading.Tasks.Task.FromResult(false);
+            }
+            else
+            {
+                return System.Threading.Tasks.Task.FromResult(true);
+            }
+        }
+
+        public Task<Notification> ReadOneAsyncNotificationByOutlookId(netflix_prContext context, string id)
+        {
+            Notification notification = (from p in context.Notification
+                                         where p.OutlookId == id
+                                         select p).FirstOrDefault();
+
+            return System.Threading.Tasks.Task.FromResult(notification);
         }
     }
 }

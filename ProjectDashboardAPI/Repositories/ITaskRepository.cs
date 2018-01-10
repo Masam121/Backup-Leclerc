@@ -8,7 +8,7 @@ namespace ProjectDashboardAPI.Repositories
 {
     public interface ITaskRepository
     {
-        Task<List<string>> ReadManyAsyncTaskConcatenatedIdByNotificationId(netflix_prContext context, int id);
+        Task<List<string>> ReadManyAsyncTaskConcatenatedIdByNotificationSAPId(netflix_prContext context, string id);
         Task<Task> ReadOneAsycnTaskByConcatenatedId(netflix_prContext context, string concatenatedId);
         Task<List<Task>> ReadManyAsyncTaskByNotificationId(netflix_prContext context, int id);
         Task<Task> CreateTaskEntity(netflix_prContext context, NotificationTask task, Notification notification);

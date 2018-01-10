@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ProjectDashboardAPI.Controllers;
 using ProjectDashboardAPI.Repositories;
 using ProjectDashboardAPI.Models.Dto;
+using System.Globalization;
 
 namespace ProjectDashboardAPI.Services
 {
@@ -23,6 +24,7 @@ namespace ProjectDashboardAPI.Services
 
         private double averageNumberOfWeekPerMonth = 4.33;
         private int oneFullDayOfWork = 8;
+        private CultureInfo culture = CultureInfo.CurrentCulture;
 
         DateTime nullDate = new DateTime(0001, 01, 01, 0, 0, 0);
 
@@ -46,17 +48,17 @@ namespace ProjectDashboardAPI.Services
             _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
         }
 
-        public List<string> getListOfMonthBetweenTwoDates(DateTime start, DateTime End)
+        public List<string> getListOfMonthBetweenTwoDates(DateTime start, DateTime End , string format)
         {
             var diff = Enumerable.Range(0, Int32.MaxValue)
                                  .Select(e => start.AddMonths(e))
                                  .TakeWhile(e => e <= End)
-                                 .Select(e => e.ToString("MMMM"));
+                                 .Select(e => e.ToString(format, CultureInfo.CurrentCulture));
 
             return diff.ToList();
         }
 
-        public List<string> createTimeLine()
+        public List<string> createTimeLine(string format)
         {
             var start = DateTime.Today;
 
@@ -66,7 +68,7 @@ namespace ProjectDashboardAPI.Services
             // set end-date to end of month
             timeLineEnd = new DateTime(timeLineEnd.Year, timeLineEnd.Month, DateTime.DaysInMonth(timeLineEnd.Year, timeLineEnd.Month));
 
-            var diff = getListOfMonthBetweenTwoDates(timeLineStart , timeLineEnd);
+            var diff = getListOfMonthBetweenTwoDates(timeLineStart , timeLineEnd, format);
 
             return diff.ToList();
         }
@@ -203,7 +205,7 @@ namespace ProjectDashboardAPI.Services
                 {
                     if (notification.startDate != null && notification.endDate != null)
                     {
-                        List<string> notificationtimeLine = getListOfMonthBetweenTwoDates(Convert.ToDateTime(notification.startDate), Convert.ToDateTime(notification.endDate));
+                        List<string> notificationtimeLine = getListOfMonthBetweenTwoDates(Convert.ToDateTime(notification.startDate), Convert.ToDateTime(notification.endDate), "MMM yy");
                         if (notificationtimeLine.Contains(month))
                         {
                             notificationsForSpecifiedMonth.Add(notification);
@@ -231,7 +233,7 @@ namespace ProjectDashboardAPI.Services
 
             double monthlyWorkload = (double)((averageNumberOfWeekPerMonth * employee.ProjectWorkRatio/100 * employee.Workload)/ oneFullDayOfWork);
 
-            List<string> timeLine = createTimeLine();
+            List<string> timeLine = createTimeLine("MMM yy");
             Dictionary<string, double> dictionnaryMonthlyWorkloadTimeLine = createTimelineDictionnary(timeLine);
             List<KeyValuePair<string, double>> list = new List<KeyValuePair<string, double>>(dictionnaryMonthlyWorkloadTimeLine);
 
@@ -248,7 +250,8 @@ namespace ProjectDashboardAPI.Services
             using (var context = new netflix_prContext())
             {
                 EmployeeWorkloadDataDto data = new EmployeeWorkloadDataDto();
-                List<string> timeLine = createTimeLine();
+                List<string> timeLine = createTimeLine("MMM yy");
+                List<string> monthOnlyTimeLine = createTimeLine("MMM");
                 List<EmployeeDataTableRow> dataTableRows = new List<EmployeeDataTableRow>();
 
                 List<Employe> employees = await _employeeRepository.ReadManyAsyncEmployee(context);
@@ -267,12 +270,15 @@ namespace ProjectDashboardAPI.Services
                             Notification notification = await _notificationRepository.ReadOneAsyncNotificationById(context, partner.NotificationId);
                             if (notification.StartDate != nullDate && notification.EstEndDate != nullDate)
                             {
-                                List<string> notificationtimeLine = getListOfMonthBetweenTwoDates(Convert.ToDateTime(notification.StartDate), Convert.ToDateTime(notification.EstEndDate));
+                                List<string> notificationtimeLine = getListOfMonthBetweenTwoDates(Convert.ToDateTime(notification.StartDate), Convert.ToDateTime(notification.EstEndDate), "MMM yy");
                                 double estimatedMonthlyWorkload = getMonthlyWorkload(notificationtimeLine, (double)partner.EstEffort);
 
                                 foreach (string month in notificationtimeLine)
                                 {
-                                    dictionnaryEstimatedEffortTimeLine[month] = dictionnaryEstimatedEffortTimeLine[month] + Math.Round(estimatedMonthlyWorkload, 2, MidpointRounding.AwayFromZero);
+                                    if (dictionnaryEstimatedEffortTimeLine.ContainsKey(month))
+                                    {
+                                        dictionnaryEstimatedEffortTimeLine[month] = dictionnaryEstimatedEffortTimeLine[month] + Math.Round(estimatedMonthlyWorkload, 2, MidpointRounding.AwayFromZero);
+                                    }                                       
                                 }
                             }
                         }
@@ -285,25 +291,25 @@ namespace ProjectDashboardAPI.Services
                         row.Title = employee.Title;
                         row.Department = employee.Department;
                         //La structure suivante est due au format demandé par ngx-datatable
-                        row.month0workload = Math.Round((monthlyWorkloadList[0] /row.Disponibility)*100, 2);
-                        row.month1workload = Math.Round((monthlyWorkloadList[1] / row.Disponibility) * 100, 2);
-                        row.month2workload = Math.Round((monthlyWorkloadList[2] / row.Disponibility) * 100, 2);
-                        row.month3workload = Math.Round((monthlyWorkloadList[3] / row.Disponibility) * 100, 2);
-                        row.month4workload = Math.Round((monthlyWorkloadList[4] / row.Disponibility) * 100, 2);
-                        row.month5workload = Math.Round((monthlyWorkloadList[5] / row.Disponibility) * 100, 2);
-                        row.month6workload = Math.Round((monthlyWorkloadList[6] / row.Disponibility) * 100, 2);
-                        row.month7workload = Math.Round((monthlyWorkloadList[7] / row.Disponibility) * 100, 2);
-                        row.month8workload = Math.Round((monthlyWorkloadList[8] / row.Disponibility) * 100, 2);
-                        row.month9workload = Math.Round((monthlyWorkloadList[9] / row.Disponibility) * 100, 2);
-                        row.month10workload = Math.Round((monthlyWorkloadList[10] / row.Disponibility) * 100, 2);
-                        row.month11workload = Math.Round((monthlyWorkloadList[11] / row.Disponibility) * 100, 2);                       
+                        row.month0workload = Math.Round((monthlyWorkloadList[0] /row.Disponibility)*100);
+                        row.month1workload = Math.Round((monthlyWorkloadList[1] / row.Disponibility) * 100);
+                        row.month2workload = Math.Round((monthlyWorkloadList[2] / row.Disponibility) * 100);
+                        row.month3workload = Math.Round((monthlyWorkloadList[3] / row.Disponibility) * 100);
+                        row.month4workload = Math.Round((monthlyWorkloadList[4] / row.Disponibility) * 100);
+                        row.month5workload = Math.Round((monthlyWorkloadList[5] / row.Disponibility) * 100);
+                        row.month6workload = Math.Round((monthlyWorkloadList[6] / row.Disponibility) * 100);
+                        row.month7workload = Math.Round((monthlyWorkloadList[7] / row.Disponibility) * 100);
+                        row.month8workload = Math.Round((monthlyWorkloadList[8] / row.Disponibility) * 100);
+                        row.month9workload = Math.Round((monthlyWorkloadList[9] / row.Disponibility) * 100);
+                        row.month10workload = Math.Round((monthlyWorkloadList[10] / row.Disponibility) * 100);
+                        row.month11workload = Math.Round((monthlyWorkloadList[11] / row.Disponibility) * 100);                       
 
                         dataTableRows.Add(row);
                     }
 
                 }
                 data.Rows = dataTableRows;
-                data.TimeLine = timeLine;
+                data.TimeLine = monthOnlyTimeLine;
 
                 return data;
             }
@@ -317,7 +323,9 @@ namespace ProjectDashboardAPI.Services
 
                 List<NotificationPartner> partners = await _notificationPartnerRepository.ReadAsyncPartnerByEmployeeId(context, employeeId);
 
-                List<string> timeLine = createTimeLine();
+                List<string> timeLine = createTimeLine("MMM yy");
+                // 201708 ISO 8601 20170601T17:00:11.124Z
+                // DateTime 2017-01-01T00:00:00
                 Dictionary<string, double> dictionnaryActualEffortTimeLine = createTimelineDictionnary(timeLine);
                 Dictionary<string, double> dictionnaryEstimatedEffortTimeLine = createTimelineDictionnary(timeLine);
 
@@ -326,23 +334,44 @@ namespace ProjectDashboardAPI.Services
                     Notification notification = await _notificationRepository.ReadOneAsyncNotificationById(context, partner.NotificationId);
                     if(notification.StartDate != nullDate && notification.EstEndDate != nullDate)
                     {
-                        List<string> notificationtimeLine = getListOfMonthBetweenTwoDates(Convert.ToDateTime(notification.StartDate), Convert.ToDateTime(notification.EstEndDate));
+                        List<string> notificationtimeLine = getListOfMonthBetweenTwoDates(notification.StartDate, notification.EstEndDate, "MMM yy");
+                        List<string> notificationSoFartimeLine = new List<string>();
+                        if (notification.CompletedDate == nullDate)
+                        {
+                            notificationSoFartimeLine = getListOfMonthBetweenTwoDates(notification.StartDate, DateTime.Today, "MMM yy");
+                        }
+                        else
+                        {
+                            notificationSoFartimeLine = getListOfMonthBetweenTwoDates(notification.StartDate, Convert.ToDateTime(notification.CompletedDate, culture), "MMM yy");
+                        }
 
-                        double actualMonthlyWorkload = getMonthlyWorkload(notificationtimeLine, (double)partner.actualEffort);
+                        double actualMonthlyWorkload = getMonthlyWorkload(notificationSoFartimeLine, (double)partner.actualEffort);
                         double estimatedMonthlyWorkload = getMonthlyWorkload(notificationtimeLine, (double)partner.EstEffort);
 
                         foreach (string month in notificationtimeLine)
                         {
-                            dictionnaryActualEffortTimeLine[month] = dictionnaryActualEffortTimeLine[month] + Math.Round(actualMonthlyWorkload, 2, MidpointRounding.AwayFromZero);
-                            dictionnaryEstimatedEffortTimeLine[month] = dictionnaryEstimatedEffortTimeLine[month] + Math.Round(estimatedMonthlyWorkload, 2, MidpointRounding.AwayFromZero);
+                            if (dictionnaryActualEffortTimeLine.ContainsKey(month))
+                            {                               
+                                dictionnaryActualEffortTimeLine[month] = dictionnaryActualEffortTimeLine[month] + Math.Round(actualMonthlyWorkload, 2);                                                     
+                            }
+                            if (dictionnaryEstimatedEffortTimeLine.ContainsKey(month))
+                            {
+                                dictionnaryEstimatedEffortTimeLine[month] = dictionnaryEstimatedEffortTimeLine[month] + Math.Round(estimatedMonthlyWorkload, 2);
+                            }
                         }
                     }
                 }
-
+                //Must change this part for internationalization(Fr-En for date)
+                var p = dictionnaryActualEffortTimeLine.Values.ToList();
+                for (int i=4; i< p.Count; i++)
+                {
+                    p[i] = 0;
+                }                
+                //
                 WorkloadDataDto workload = new WorkloadDataDto();
                 workload.MonthCategory = timeLine;
                 workload.EstimatedSerie = dictionnaryEstimatedEffortTimeLine.Values.ToList();
-                workload.ActualSerie = dictionnaryActualEffortTimeLine.Values.ToList();
+                workload.ActualSerie = p;
                 workload.MonthlyWorkload = await getEmployeeMonthlyWorkload(context, employeeId);
 
                 return workload;
@@ -412,7 +441,7 @@ namespace ProjectDashboardAPI.Services
                 deleteUnexistingNotificationInSAP(context, ExistingNotificationsInDatabase);
 
                 context.SaveChanges();
-                return new ObjectResult("Successfully refreshed...");
+                return new ObjectResult("Successfully refreshed Notifications...");
             }                   
         }        
     }

@@ -9,10 +9,10 @@ namespace ProjectDashboardAPI.Services.Mapping
 {
     public class NotificationPartnerMappingService : INotificationPartnerMappingService
     {
-        private readonly IMapper<netflix_prContext, Tuple<Employe, Role>, PartnerDto> _NotificationPartnerToPartnerDtoMapper;
+        private readonly IMapper<netflix_prContext, Tuple<Employe, Role, NotificationPartner>, PartnerDto> _NotificationPartnerToPartnerDtoMapper;
         private readonly IMapper<netflix_prContext, Tuple<Partner, Notification>, NotificationPartner> _NotificationPartnerSAPToNotificationPartnerEntityMapper;
 
-        public NotificationPartnerMappingService(IMapper<netflix_prContext, Tuple<Employe, Role>, PartnerDto> notificationPartnerToPartnerDtoMapper,
+        public NotificationPartnerMappingService(IMapper<netflix_prContext, Tuple<Employe, Role, NotificationPartner>, PartnerDto> notificationPartnerToPartnerDtoMapper,
                                                  IMapper<netflix_prContext, Tuple<Partner, Notification>, NotificationPartner> notificationPartnerSAPToNotificationPartnerEntityMapper)
         {
             _NotificationPartnerToPartnerDtoMapper = notificationPartnerToPartnerDtoMapper ?? 
@@ -21,7 +21,7 @@ namespace ProjectDashboardAPI.Services.Mapping
                                                                        throw new ArgumentNullException(nameof(notificationPartnerSAPToNotificationPartnerEntityMapper));
         }
 
-        public PartnerDto Map(netflix_prContext context, Tuple<Employe, Role> entity)
+        public PartnerDto Map(netflix_prContext context, Tuple<Employe, Role, NotificationPartner> entity)
         {
             return _NotificationPartnerToPartnerDtoMapper.Map(context, entity);
         }

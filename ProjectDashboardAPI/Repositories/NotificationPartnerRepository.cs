@@ -75,10 +75,6 @@ namespace ProjectDashboardAPI.Repositories
 
         public Task<IEnumerable<PartnerDto>> CreateNotificationPartnersDto(netflix_prContext context, Notification notification)
         {
-            var test = (from p in context.NotificationPartner
-             where p.NotificationId == notification.Id
-             select p).FirstOrDefault();
-
             var notificationPartners = (from p in context.NotificationPartner
                                         where p.NotificationId == notification.Id
                                         join e in context.Employe on p.EmployeId equals e.Id
@@ -89,7 +85,7 @@ namespace ProjectDashboardAPI.Repositories
 
             foreach (var partner in notificationPartners)
             {
-                Tuple<Employe, Role> tuple = Tuple.Create(partner.employee, partner.role);
+                Tuple<Employe, Role, NotificationPartner> tuple = Tuple.Create(partner.employee, partner.role, partner.notificationPartner);
                 partners.Add(_notificationPartnerMappingService.Map(context, tuple));
             }
             return System.Threading.Tasks.Task.FromResult(partners.AsEnumerable());            
@@ -240,6 +236,36 @@ namespace ProjectDashboardAPI.Repositories
         public void DeletePartner(netflix_prContext context, NotificationPartner partner)
         {
             context.Remove(partner);
+        }
+
+        public Task<bool> VerifyIfPartnerAlreadyExistsByConcatenatedId(netflix_prContext context, string concatenatedId)
+        {
+            NotificationPartner partner = (from p in context.NotificationPartner
+                                                  where p.ConcatenatedId == concatenatedId
+                                                  select p).FirstOrDefault();
+
+            if(partner != null)
+            {
+                return System.Threading.Tasks.Task.FromResult(true);
+            }
+            else
+            {
+                return System.Threading.Tasks.Task.FromResult(false);
+            }
+        }
+
+        public Task<NotificationPartner> ReadOneAsyncPartnerByConcatenatedId(netflix_prContext context, string concatenatedId)
+        {
+            NotificationPartner partner = (from p in context.NotificationPartner
+                                           where p.ConcatenatedId == concatenatedId
+                                           select p).FirstOrDefault();
+
+            return System.Threading.Tasks.Task.FromResult(partner);
+        }
+
+        public void Update(netflix_prContext context, NotificationPartner partner)
+        {
+            context.NotificationPartner.Update(partner);
         }
     }
 }

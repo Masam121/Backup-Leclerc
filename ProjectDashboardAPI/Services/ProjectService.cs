@@ -388,7 +388,7 @@ namespace ProjectDashboardAPI.Services
                         }
                     }
                     context.SaveChanges();
-                    return new ObjectResult("Successfully refreshed...");
+                    return new ObjectResult("Successfully refreshed Projects...");
                 }
                 catch (Exception ex)
                 {

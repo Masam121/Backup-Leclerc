@@ -40,10 +40,14 @@ namespace ProjectDashboardAPI.Repositories
             return System.Threading.Tasks.Task.FromResult(tasks);
         }
 
-        public Task<List<string>> ReadManyAsyncTaskConcatenatedIdByNotificationId(netflix_prContext context, int id)
+        public Task<List<string>> ReadManyAsyncTaskConcatenatedIdByNotificationSAPId(netflix_prContext context, string id)
         {
+            int notificationId = (from p in context.Notification
+                                         where p.NotificationSapId == id
+                                         select p.Id).FirstOrDefault();
+
             List<String> ExistingTasksId = (from p in context.Task
-                                            where p.NotificationId == id
+                                            where p.NotificationId == notificationId
                                             select p.ConcatenatedId).ToList();
 
             return System.Threading.Tasks.Task.FromResult(ExistingTasksId);

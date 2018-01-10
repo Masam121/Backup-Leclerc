@@ -44,7 +44,7 @@ namespace ProjectDashboardAPI.Mappers
             project_netxlix_card.ProjectStatus = entity.ProjectStatus;
             project_netxlix_card.StartDate = entity.StartDate;
             project_netxlix_card.Thumbnail = entity.Thumbnail;
-            project_netxlix_card.EstEndDate = entity.EstEndDate != null ? entity.EstEndDate.Value.ToString("MMMM, yyyy") : "n/a";
+            project_netxlix_card.EstEndDate = entity.EstEndDate != null ? entity.EstEndDate.Value.ToString("MMM, yyyy") : "n/a";
             project_netxlix_card.Department = entity.Department;
             project_netxlix_card.CompletionPercentage = entity.CompletionPercentage;
             project_netxlix_card.Factory = entity.Factory;

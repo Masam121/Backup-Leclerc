@@ -44,9 +44,10 @@ namespace NetflixAPI
             services.AddSingleton<INotificationService, NotificationService>();
             services.AddSingleton<ITaskService, TaskService>();
             services.AddSingleton<IEmployeeService, EmployeeService>();
+            services.AddSingleton<IOutlookService, OutlookService>();
 
             services.AddSingleton<IMapper<netflix_prContext, Notification, NotificationDto>, NotificationEntityToNotificationDtoMapper>();
-            services.AddSingleton<IMapper<netflix_prContext, Tuple<Employe, Role>, PartnerDto>, NotificationPartnerToPartnerDtoMapper>();
+            services.AddSingleton<IMapper<netflix_prContext, Tuple<Employe, Role, NotificationPartner>, PartnerDto>, NotificationPartnerToPartnerDtoMapper>();
             services.AddSingleton<IMapper<netflix_prContext, Project, ProjectNetflixCard>, ProjectEntityToProjectNetflixCardMapper>();
             services.AddSingleton<IMapper<netflix_prContext, Project, ProjectNetflix>, ProjectEntityToProjectNetflixMapper>();
             services.AddSingleton<IMapper<netflix_prContext, ProjectSAP, Project>, ProjectSAPToProjectEntityMapper>();

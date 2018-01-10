@@ -150,6 +150,9 @@ namespace ProjectDashboardAPI
                 entity.Property(e => e.Workload)
                     .HasColumnName("workload")
                     .HasColumnType("int(10)");
+
+                entity.Property(e => e.isVendor)
+                    .HasColumnName("isVendor");
             });
 
             modelBuilder.Entity<Expense>(entity =>
@@ -194,7 +197,6 @@ namespace ProjectDashboardAPI
                 entity.Property(e => e.CreationDate).HasColumnName("creation_date");
 
                 entity.Property(e => e.Department)
-                    .IsRequired()
                     .HasColumnName("department")
                     .HasColumnType("varchar(255)");
 
@@ -215,8 +217,11 @@ namespace ProjectDashboardAPI
                     .HasColumnName("notificationSAP_id")
                     .HasColumnType("varchar(255)");
 
+                entity.Property(e => e.OutlookId)
+                    .HasColumnName("outlookId")
+                    .HasColumnType("varchar(255)");
+
                 entity.Property(e => e.Priority)
-                    .IsRequired()
                     .HasColumnName("priority")
                     .HasColumnType("varchar(255)");
 
